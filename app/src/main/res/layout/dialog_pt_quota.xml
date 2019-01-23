@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/tvQuotaTarget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="30dp"
+            android:text="Player's quota target: "
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/etQuotaTarget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/tvQuotaTarget"
+            android:layout_toEndOf="@id/tvQuotaTarget"
+            android:digits="0123456789"
+            android:ems="2"
+            android:imeOptions="actionNext"
+            android:inputType="number"
+            android:maxEms="2"
+            android:maxLength="2"
+            android:maxLines="1"
+            android:text="36" />
+
+        <TextView
+            android:id="@+id/tvEagle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/tvQuotaTarget"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="30dp"
+            android:text="Eagles: "
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/etEagle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/tvEagle"
+            android:layout_toEndOf="@id/tvEagle"
+            android:digits="0123456789"
+            android:ems="1"
+            android:imeOptions="actionNext"
+            android:inputType="numberDecimal"
+            android:maxEms="1"
+            android:maxLength="1"
+            android:maxLines="1"
+            android:text="8" />
+
+        <TextView
+            android:id="@+id/tvBirdie"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/tvEagle"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"
+            android:text="Birdies: "
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/etBirdie"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/tvBirdie"
+            android:layout_toEndOf="@id/tvEagle"
+            android:digits="0123456789"
+            android:ems="1"
+            android:imeOptions="actionNext"
+            android:inputType="numberDecimal"
+            android:maxEms="1"
+            android:maxLength="1"
+            android:maxLines="1"
+            android:text="4" />
+
+        <TextView
+            android:id="@+id/tvPar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/tvBirdie"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"
+            android:text="Pars: "
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/etPar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/tvPar"
+            android:layout_toEndOf="@id/tvEagle"
+            android:digits="0123456789"
+            android:ems="1"
+            android:imeOptions="actionNext"
+            android:inputType="numberDecimal"
+            android:maxEms="1"
+            android:maxLength="1"
+            android:maxLines="1"
+            android:text="2" />
+
+        <TextView
+            android:id="@+id/tvBogey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/tvPar"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"
+            android:text="Bogeys: "
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/etBogey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/tvBogey"
+            android:layout_below="@id/tvBirdie"
+            android:layout_toEndOf="@id/tvEagle"
+            android:digits="0123456789"
+            android:ems="1"
+            android:imeOptions="actionNext"
+            android:inputType="numberDecimal"
+            android:maxEms="1"
+            android:maxLength="1"
+            android:maxLines="1"
+            android:text="1" />
+
+        <TextView
+            android:id="@+id/tvDouble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/tvBogey"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"
+            android:text="Double: "
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/etDouble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/tvDouble"
+            android:layout_below="@id/tvBirdie"
+            android:layout_toEndOf="@+id/tvEagle"
+            android:digits="0123456789"
+            android:ems="1"
+            android:imeOptions="actionNext"
+            android:inputType="numberDecimal"
+            android:maxEms="1"
+            android:maxLength="1"
+            android:maxLines="1"
+            android:text="0" />
+
+        <TextView
+            android:id="@+id/tvOther"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/tvDouble"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"
+            android:text="Other: "
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/etOther"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/tvOther"
+            android:layout_below="@id/tvBirdie"
+            android:layout_toEndOf="@+id/tvEagle"
+            android:digits="-0123456789"
+            android:ems="2"
+            android:imeOptions="actionDone"
+            android:inputType="number|numberSigned"
+            android:maxEms="1"
+            android:maxLength="2"
+            android:maxLines="1"
+            android:text="-1" />
+
+
+        <Button
+            android:id="@+id/butSaveQuota"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/tvOther"
+            android:layout_below="@+id/tvOther"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp"
+            android:text="Save" />
+
+        <Button
+            android:id="@+id/butCancelQuota"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/etQuotaTarget"
+            android:layout_alignTop="@+id/butSaveQuota"
+            android:layout_marginEnd="20dp"
+            android:text="Cancel" />
+    </RelativeLayout>
+</ScrollView>

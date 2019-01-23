@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">TeamScore</string>
+
+    <string name="str_add_course">Add a Course</string>
+    <string name="title_activity_course_list">Course List</string>
+    <string name="course_name">Course Name</string>
+    <string name="save">Save</string>
+    <string name="hole">Hole</string>
+    <string name="_1">1</string>
+    <string name="title_activity_player_setup">PlayerSetup</string>
+    <string name="title_activity_loft_games">LoftGames</string>
+    <string name="plus_text">+</string>
+    <string name="next_text">Next</string>
+    <string name="prev_text">Prev</string>
+    <string name="one_text">1</string>
+    <string name="back_nine_text">Back Nine</string>
+    <string name="net_score_text">Net Score</string>
+    <string name="summary_text">Summary</string>
+    <string name="player_name_text">Player Name</string>
+    <string name="minus_text">-</string>
+    <string name="four_text">4</string>
+</resources>

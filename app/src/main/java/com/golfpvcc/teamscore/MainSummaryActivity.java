@@ -1,0 +1,527 @@
+package com.golfpvcc.teamscore;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.golfpvcc.teamscore.Database.PlayerRecord;
+import com.golfpvcc.teamscore.Database.RealmScoreCardAccess;
+import com.golfpvcc.teamscore.Extras.EmailScores;
+import com.golfpvcc.teamscore.Player.DisplayPlayerScoreData;
+
+import io.realm.Realm;
+
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.COURSE_NAME;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.FIRST_HOLE;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.HOLES_18;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.NEXT_SCREEN;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.NINETH_HOLE;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PLAYER_TOTAL;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_BIRDEIS;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_BOGGY;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_DOUBLE;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_EAGLE;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_END;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_OTHER;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_PAR;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_TARGET;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_BIRDIE;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_BOGGEY;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_DOUBLE;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_EAGLE;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_OTHER;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_PAR;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_TARGET;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.SCREEN_COURSE_LIST;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.SCREEN_COURSE_SELECTED;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.SCREEN_COURSE_SETUP;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.SCREEN_GAME_ON;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.SCREEN_GAME_SUMMARY;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.SCREEN_LOFT_GAME;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.SCREEN_PLAYERS_SETUP;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM_END;
+
+/*
+The screen Orientation is set in the apps manifest
+android:screenOrientation="landscape"
+ */
+public class MainSummaryActivity  extends AppCompatActivity {
+    Realm m_Realm;
+    RealmScoreCardAccess m_RealmScoreCardAccess;
+    int[] m_PointQuota;                 // holds the point quota value for eagles, birdies, pars, boggy, double, others
+    TextView[][] m_PlayerScoreSummaryTable;      // score grid for displaing the player's scores
+    TextView[][] m_TeamScoreSummaryTable;      // score grid for displaing the Team's scores
+    TableLayout m_PlayerTableLayoutCreate;       // Player score card table
+    TableLayout m_TeamTableLayoutCreate;       // Team score card table
+    DisplayPlayerScoreData[] m_PlayerScreenData;
+    String SelectedCourse = "";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.game_summary);
+
+        if (true == OpenReamlDatabase()) {
+            DisplayGameSummary();
+        } else {        // golf course has been deleted or no players on the score card, display the select a golf course screen
+            Intent intent = new Intent(this, CourseList.class);    // list the courses to select
+            startActivityForResult(intent, 20);                    // display the new screen
+        }
+    }
+
+    /*
+The OnClick function will determine what the user what to do next:
+Review the current game
+Start a new Game.
+Quit the App.
+ */
+    public void onClickGameSummary(View view) {
+        int ButtonId;
+        Intent intent = null;
+        ButtonId = view.getId();
+
+        switch (ButtonId) {
+            case R.id.butSummaryGameOn:
+                intent = new Intent(this, DisplayScoreCardDetail.class);    // Start keeping score for the current game being played
+                break;
+
+            case R.id.butSummaryNewGame:
+                intent = new Intent(this, CourseList.class);    // list the courses to select
+                break;
+
+            case R.id.butSummaryGameOver:
+                finish();       // close this screen or exit this screen
+                break;
+        }
+        if (intent != null) {
+            startActivityForResult(intent, 20);      // display the new screen
+        }
+    }
+
+    /*
+    RESULT_CANCELED
+     */
+    @Override
+    protected void onActivityResult(int currentScreenDisplayed, int resultCode, Intent data) {
+        super.onActivityResult(currentScreenDisplayed, resultCode, data);
+        int NewScreen = SCREEN_GAME_SUMMARY;
+
+        if (resultCode == RESULT_OK) {
+
+            NewScreen = data.getIntExtra(NEXT_SCREEN, 0);
+        }
+        resultsStateMacnineScreen(NewScreen, resultCode, data);
+    }
+
+    /*
+This function will branch to the next screen using the result for the current screen that just exited.
+ */
+    private void resultsStateMacnineScreen(int currentScreenDisplayed, int screenExitResults, Intent data) {
+        Intent newIntent = null;
+
+        switch (currentScreenDisplayed) {
+            case SCREEN_GAME_SUMMARY:       // This function is called from the "Game On" screen
+                DisplayGameSummary();
+                break;
+
+            case SCREEN_COURSE_LIST:
+               newIntent = new Intent(this, CourseList.class);    // list the courses to select
+                break;
+
+            case SCREEN_COURSE_SELECTED:
+                break;
+
+            case SCREEN_COURSE_SETUP:
+                break;
+
+            case SCREEN_PLAYERS_SETUP:  // just selected the course from the course list menu
+                SelectedCourse = data.getStringExtra(COURSE_NAME);
+               newIntent = new Intent(this, PlayerSetup.class);    // list the courses to select
+                newIntent.putExtra(COURSE_NAME, SelectedCourse);
+                break;
+
+            case SCREEN_LOFT_GAME:
+                break;
+
+            case SCREEN_GAME_ON:
+                newIntent = new Intent(this, DisplayScoreCardDetail.class);    // Start keeping score for the current game being played
+                break;
+        }
+        if (newIntent != null) {
+            startActivityForResult(newIntent, 20);      // display the new screen
+        }
+    }
+
+    /*
+    This function will breakdown the game summary into players and team summary scores.
+     */
+    private void DisplayGameSummary() {
+        int NumberOfPlayers;
+
+        NumberOfPlayers = ValidateGolfCourseAndPlayers();
+        if (0 < NumberOfPlayers) {
+            BuildSummaryTable(NumberOfPlayers);            // build screen tables
+            InitPlayersScreenRecord(m_PointQuota, NumberOfPlayers);      // setup the player's database record class
+            DisplayPlayersSummary(NumberOfPlayers);
+            DisplayTeamSummary(NumberOfPlayers);
+        } else {        // golf course has been deleted or no players on the score card, display the select a golf course screen
+            Toast.makeText(this, "Exiting .. no golf courses or players configured. ", Toast.LENGTH_LONG).show();
+            finish();       // close this screen or exit this screen
+        }
+    }
+
+    /*
+    The player summary will used the DisplayPlayerHoleData which contains all of the player's information
+    This function will display the player's golf summary - "Score", "Quota", "Eagle", "Birdies", " Pars", "Bog", "Dbl", "Othr"
+     */
+    private void DisplayPlayersSummary(int NumberOfPlayers) {
+        String PlayerName;
+        int PlayerHandicap, Row = 0, Col, SummaryScore;
+
+        for (int Inx = 0; Inx < NumberOfPlayers; Inx++) {      // row zero has the table header
+            Col = 0;
+            Row++;      // next row on the score card,  row zero has the table header
+            PlayerName = m_PlayerScreenData[Inx].getPlayerName();
+            PlayerHandicap = m_PlayerScreenData[Inx].getPlayerHandicap();
+            m_PlayerScoreSummaryTable[Row][Col++].setText(PlayerHandicap + " - " + PlayerName);
+
+            for (int ScoreInx = 0; ScoreInx < SUM_END; ScoreInx++) {
+                SummaryScore = m_PlayerScreenData[Inx].GetPlayerStrokeSummary(ScoreInx);
+                m_PlayerScoreSummaryTable[Row][Col++].setText(Integer.toString(SummaryScore));      // will update the screen
+            }
+        }
+    }
+
+    /*
+    The Team summary will used the DisplayPlayerHoleData which contains all of the player's information about the team's scores
+     */
+    private void DisplayTeamSummary(int NumberOfPlayers) {
+        int Row = 1;        // row 0 is the header row
+        DisplayTeamPointQuoteSummary(NumberOfPlayers, Row++);
+        DisplayTeamOverUnderSummary(NumberOfPlayers, Row++);
+        DisplayTeamTotalStokeSummary(NumberOfPlayers, Row);
+    }
+    /*
+This function will calculate the team point quota team scores
+ */
+    private void DisplayTeamPointQuoteSummary(int NumberOfPlayers, int DisplayRow) {
+        float FrontNine, BackNine, TeamTotal;
+        int Col = 1;
+
+        FrontNine = BackNine = TeamTotal = 0;
+        for (int Inx = 0; Inx < NumberOfPlayers; Inx++) {
+            FrontNine += m_PlayerScreenData[Inx].GetTotalPlayerPointQuotaTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota, will round down
+            BackNine += m_PlayerScreenData[Inx].GetTotalPlayerPointQuotaTotal(NINETH_HOLE, HOLES_18);     // get the front nine quota, will round down
+        }
+
+        TeamTotal += FrontNine + BackNine;
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Float.toString(FrontNine));      // will update the front nine total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Float.toString(BackNine));      // will update the front back total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Float.toString(TeamTotal));      // will update the team total screen
+    }
+
+    /*
+This function will calculate the team strokes over/under using the player's strokes used on holes for team scores
+ */
+    private void DisplayTeamOverUnderSummary(int NumberOfPlayers, int DisplayRow) {
+        int FrontNine, BackNine, TeamTotal, Col = 1;
+
+        FrontNine = BackNine = 0;
+        for (int Inx = 0; Inx < NumberOfPlayers; Inx++) {
+            FrontNine += m_PlayerScreenData[Inx].GetTotalPlayerUnderOverUseTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota
+            BackNine += m_PlayerScreenData[Inx].GetTotalPlayerUnderOverUseTotal(NINETH_HOLE, HOLES_18);    // get the front nine quota
+        }
+        TeamTotal = FrontNine + BackNine;
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(FrontNine));      // will update the front nine total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(BackNine));      // will update the front back total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(TeamTotal));      // will update the team total screen
+    }
+
+
+    /*
+    This function will display the team total strokes for the front, back and total 18 holes
+     */
+    private void DisplayTeamTotalStokeSummary(int NumberOfPlayers, int DisplayRow) {
+        int FrontNine, BackNine, TeamTotal, Col = 1;
+
+        FrontNine = BackNine = 0;
+        for (int Inx = 0; Inx < NumberOfPlayers; Inx++) {
+            FrontNine += m_PlayerScreenData[Inx].GetTotalPlayerStrokesUseTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota
+            BackNine += m_PlayerScreenData[Inx].GetTotalPlayerStrokesUseTotal(NINETH_HOLE, HOLES_18);    // get the front nine quota
+        }
+        TeamTotal = FrontNine + BackNine;
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(FrontNine));      // will update the front nine total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(BackNine));      // will update the front back total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(TeamTotal));      // will update the team total screen
+    }
+
+
+
+    /*
+    This function will init the Player's hold class - the class has access to the player's database record and keeps track of the player's total and team score.
+     */
+    private void InitPlayersScreenRecord(int[] PointQuota, int NumberOfPlayers) {
+        PlayerRecord MyPlayer;
+        int Inx, CurrentHole, Row = 1;
+        int[] CoursePar, CourseHandicap;
+
+        CoursePar = new int[HOLES_18];
+        CourseHandicap = new int[HOLES_18];
+        for (CurrentHole = 0; CurrentHole < HOLES_18; CurrentHole++) {
+            CoursePar[CurrentHole] = m_RealmScoreCardAccess.GetGolfCourseHoleParInt(CurrentHole);               // Save the course hole pars
+            CourseHandicap[CurrentHole] = m_RealmScoreCardAccess.GetGolfCourseHoleHandicapInt(CurrentHole);               // Save the course hole handicap
+        }
+
+        for (Inx = 0, Row = 1; Inx < NumberOfPlayers; Inx++, Row++) {
+            if (m_PlayerScreenData[Inx] == null) {
+                MyPlayer = m_RealmScoreCardAccess.GetPlayerFromScoreCard(Inx);  // find all of the current player database records on the score card
+                m_PlayerScreenData[Inx] = new DisplayPlayerScoreData(this, PointQuota, MyPlayer);
+                m_PlayerScreenData[Inx].CalculatePlayerScoreSummary(CoursePar, CourseHandicap);
+                AddTextViewListerner( Inx, Row); // use for emailing score to user
+            }
+        }
+    }
+    /*
+       This function will add text view of the player's name on the score card, used to email player.
+        */
+    private void AddTextViewListerner( int Inx, int Row) {
+        TextView tv_PlayerName;
+
+        tv_PlayerName = m_PlayerScoreSummaryTable[Row][0];      // text view from screen
+        tv_PlayerName.setOnClickListener(tvEmailScoring);
+        String strTmp = "summary_player_tv_" + Inx;                            // net team score for the hole
+
+        int tv_Id = getResources().getIdentifier(strTmp,"id", getPackageName());
+
+        tv_PlayerName.setId(tv_Id);      // id used in the email function
+
+        m_PlayerScreenData[Inx].setTvPlayerLowerCurScore(tv_PlayerName);
+    }
+    /*
+
+     */
+    private View.OnClickListener tvEmailScoring = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            DisplayPlayerScoreData tmpPlayerScreenData = null;
+            int textId = view.getId(), Inx = -1;
+            EmailScores MyEmail;
+
+            switch (textId) {
+                case R.id.summary_player_tv_0:
+                    Inx = 0;
+                    break;
+                case R.id.summary_player_tv_1:
+                    Inx = 1;
+                    break;
+                case R.id.summary_player_tv_2:
+                    Inx = 2;
+                    break;
+                case R.id.summary_player_tv_3:
+                    Inx = 3;
+                    break;
+            }
+            if( -1 < Inx ) {
+                tmpPlayerScreenData = m_PlayerScreenData[Inx];
+                String Subject = "Player's Score: ";
+                Subject += tmpPlayerScreenData.getPlayerName();
+                Subject += "  - " + m_RealmScoreCardAccess.getTodayGolfCoursename();        // get the current score for today's game
+                String Body = tmpPlayerScreenData.getSpreadSheetScore();
+
+                MyEmail = new EmailScores(view.getContext());
+                MyEmail.SetEmailSubject(Subject);
+                MyEmail.SetEmailBody(Body);
+                MyEmail.ToPostOffice();
+            }
+        }
+    };
+    /*
+  This function will load the Point Quote values into the point quato array - the user can set the values for the course select menu (upper right ...)
+  */
+    private int[] LoadPointQuotaData() {
+        String Value_str;
+        int[] PointQuota;
+        PointQuota = new int[PQ_END];
+        SharedPreferences pref = getSharedPreferences("PointQuota", MODE_PRIVATE);
+        if (pref != null) {
+
+            Value_str = pref.getString(QUOTA_TARGET, "36");
+            PointQuota[PQ_TARGET] = Integer.parseInt(Value_str);
+            Value_str = pref.getString(QUOTA_EAGLE, "8");
+            PointQuota[PQ_EAGLE] = Integer.parseInt(Value_str);
+            Value_str = pref.getString(QUOTA_BIRDIE, "4");
+            PointQuota[PQ_BIRDEIS] = Integer.parseInt(Value_str);
+            Value_str = pref.getString(QUOTA_PAR, "2");
+            PointQuota[PQ_PAR] = Integer.parseInt(Value_str);
+            Value_str = pref.getString(QUOTA_BOGGEY, "1");
+            PointQuota[PQ_BOGGY] = Integer.parseInt(Value_str);
+            Value_str = pref.getString(QUOTA_DOUBLE, "0");
+            PointQuota[PQ_DOUBLE] = Integer.parseInt(Value_str);
+            Value_str = pref.getString(QUOTA_OTHER, "0");
+            PointQuota[PQ_OTHER] = Integer.parseInt(Value_str);
+        }
+        return PointQuota;
+    }
+
+    /*
+    This function will setup the real databse and get the course information
+     */
+    boolean OpenReamlDatabase() {
+        boolean status = false;
+        int NumberOfPlayers;
+
+        m_PointQuota = LoadPointQuotaData();
+        m_Realm = Realm.getDefaultInstance();
+        if (m_Realm != null) {
+            m_RealmScoreCardAccess = new RealmScoreCardAccess(m_Realm);
+
+            NumberOfPlayers = ValidateGolfCourseAndPlayers();
+            if (0 < NumberOfPlayers)
+                status = true;
+        }
+        return status;
+    }
+
+    /*
+    This function check to make sure the user did not delete the golf course or players after playing around.
+     */
+    int ValidateGolfCourseAndPlayers() {
+        String GolfCourseName, GolfCourseHeader = "Course: ";
+        int NumberOfPlayers = 0, RecordStatus;
+        m_RealmScoreCardAccess.ReadTodayScoreCardRecord();           // get the current score card from the database for today's game
+        GolfCourseName = m_RealmScoreCardAccess.getTodayGolfCoursename();        // get the current score for today's game
+        if (GolfCourseName != null) {
+            if (GolfCourseName.length() > 2) {
+                RecordStatus = m_RealmScoreCardAccess.ReadScoreCardFromDatabase(GolfCourseName);        // will read in the pars and handicaps from the current playing course
+                if (RecordStatus == 0) {
+                    m_PointQuota = LoadPointQuotaData();
+                    NumberOfPlayers = m_RealmScoreCardAccess.PlayerRecordCnt();  // how many player on the score card
+
+                    TextView tvPlayerSummary = (TextView) findViewById(R.id.textCourseName);
+                    GolfCourseHeader += GolfCourseName;
+                    tvPlayerSummary.setText(GolfCourseHeader);
+
+                    m_PlayerScreenData = new DisplayPlayerScoreData[PLAYER_TOTAL];   // have to deal with a player being added after the round starts
+                } else
+                    Toast.makeText(this, "Resume failed, golf course has been deleted! ", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Please configure golf course.", Toast.LENGTH_LONG).show();
+            }
+        } else
+            Toast.makeText(this, "Resume failed, golf course has been deleted! ", Toast.LENGTH_LONG).show();
+        return (NumberOfPlayers);
+    }
+
+    /*
+    This function will clear the player and summary tables on the summary screen
+     */
+    private void ClearPlayerAndSummaryTables() {
+
+        if (m_PlayerTableLayoutCreate != null) {
+            int count = m_PlayerTableLayoutCreate.getChildCount();
+            for (int i = 0; i < count; i++) {
+                View child = m_PlayerTableLayoutCreate.getChildAt(i);
+                if (child instanceof TableRow)
+                    ((ViewGroup) child).removeAllViews();
+            }
+        }
+        if (m_TeamTableLayoutCreate != null) {
+            int count = m_TeamTableLayoutCreate.getChildCount();
+            for (int i = 0; i < count; i++) {
+                View child = m_TeamTableLayoutCreate.getChildAt(i);
+                if (child instanceof TableRow)
+                    ((ViewGroup) child).removeAllViews();
+            }
+        }
+        m_PlayerScoreSummaryTable = null;
+        m_TeamScoreSummaryTable = null;
+    }
+
+    /*
+    This function will build the summary table for the player's scores
+     */
+    private void BuildSummaryTable(int NumberOfPlayers) {
+        String[] PlayerColumnText = {"Player", "Score", "Quota", "Eagle", "Birdies", "Pars", "Bog", "Dbl", "Othr"};
+        String[] PlayerRowText = {"", "Player 1", "Player 2", "Player 3", "Player 4"};
+        String[] TeamColumnText = {"Team", "Front", "Back", "Total"};
+        String[] TeamRowText = {"", "Pt. Quota", "Over/Under", "Score"};
+
+        ClearPlayerAndSummaryTables();
+
+        int rl = PlayerRowText.length;
+        int cl = PlayerColumnText.length;
+        rl -= (PLAYER_TOTAL - NumberOfPlayers);
+        m_PlayerScoreSummaryTable = new TextView[rl][cl];                // row col -  keeps track of all of the cells text views
+
+        m_PlayerTableLayoutCreate = createSummaryTableLayout(m_PlayerScoreSummaryTable, PlayerRowText, PlayerColumnText, rl, cl);
+        TableLayout PlayertableLayout = (TableLayout) findViewById(R.id.playerSummary);    // find the table layout in the xml file
+        PlayertableLayout.addView(m_PlayerTableLayoutCreate);
+
+        rl = TeamRowText.length;
+        cl = TeamColumnText.length;
+        m_TeamScoreSummaryTable = new TextView[rl][cl];                // row col -  keeps track of all of the cells text views
+
+        m_TeamTableLayoutCreate = createSummaryTableLayout(m_TeamScoreSummaryTable, TeamRowText, TeamColumnText, rl, cl);
+        TableLayout TeamtableLayout = (TableLayout) findViewById(R.id.teamSummary);    // find the table layout in the xml file
+        TeamtableLayout.addView(m_TeamTableLayoutCreate);
+    }
+
+    /*
+      This function will create the summary score table with the names and scores
+       */
+    private TableLayout createSummaryTableLayout(TextView[][] Table, String[] rv, String[] cv, int rowCount, int columnCount) {
+
+        // 1) Create a tableLayout and its params
+        TableLayout tableLayout = new TableLayout(this);
+        TableLayout.LayoutParams tableLayoutParams = new TableLayout.LayoutParams();
+        tableLayout.setBackgroundColor(Color.BLACK);
+
+        // 2) create tableRow params
+        TableRow.LayoutParams tableRowParams = new TableRow.LayoutParams();
+        tableRowParams.setMargins(2, 2, 2, 2);  // the width of the grid lines
+        tableRowParams.weight = 1;
+
+        for (int Row = 0; Row < rowCount; Row++) {
+            // 3) create tableRow
+            TableRow tableRow = new TableRow(this);         // new table Row
+            tableRow.setBackgroundColor(Color.BLACK);
+
+            for (int Col = 0; Col < columnCount; Col++) {
+                // 4) create textView
+                TextView textView = new TextView(this);     // create the child view for the text
+                if (Row == 0) {
+                    textView.setBackgroundColor(Color.LTGRAY);
+                } else
+                    textView.setBackgroundColor(Color.WHITE);
+
+                textView.setGravity(Gravity.CENTER);
+                textView.setTextSize(20);
+                textView.setPadding(3, 3, 3, 3);
+
+                Table[Row][Col] = textView;
+                if (Row == 0) {
+                    textView.setText(cv[Col]);       // Display the colunm headers
+                } else if (Col == 0) {
+                    textView.setText(rv[Row]);       // Display the row headers
+                } else {
+                    textView.setText(" ");
+                }
+                tableRow.addView(textView, tableRowParams);     // 5) add textView to tableRow
+            }
+            tableLayout.addView(tableRow, tableLayoutParams);   // 6) add tableRow to tableLayout
+        }
+        return tableLayout;
+    }
+
+}
+

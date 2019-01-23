@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/iv_logo"
+            android:layout_width="@dimen/iv_logo_size"
+            android:layout_height="@dimen/iv_logo_size"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="@dimen/iv_logo_margin"
+            android:src="@drawable/logo1" />
+        <Button
+            android:id="@+id/butAddNewCourse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="@dimen/btn_add_margin"
+            android:background="@drawable/bg_btn_add_it"
+            android:fontFamily="sans-serif-thin"
+            android:paddingBottom="@dimen/btn_add_vertical_padding"
+            android:paddingLeft="@dimen/btn_add_horizonal_padding"
+            android:paddingRight="@dimen/btn_add_horizonal_padding"
+            android:paddingTop="@dimen/btn_add_vertical_padding"
+            android:text="@string/str_add_course"
+            android:textAllCaps="false"
+            android:textColor="@color/btn_add_color"
+            android:textSize="@dimen/btn_add_font_size"
+            android:layout_alignParentBottom="false"
+            android:layout_alignParentTop="false"
+            android:layout_alignParentStart="false" />
+    </RelativeLayout>
+</ScrollView>

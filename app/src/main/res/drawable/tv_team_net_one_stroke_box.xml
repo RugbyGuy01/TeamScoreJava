@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle" >
+    <stroke
+        android:width="2dp"
+        android:color="@color/team_box_high_light_net_used_once" />
+    <!-- View background color -->
+    <solid
+        android:color="@color/one_stroke_hole" >
+    </solid>
+</shape>

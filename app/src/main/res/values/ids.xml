@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Text View IDs used by the email function in the Game summary file -->
+    <item type="id" name="summary_player_tv_0" />
+    <item type="id" name="summary_player_tv_1" />
+    <item type="id" name="summary_player_tv_2" />
+    <item type="id" name="summary_player_tv_3" />
+
+</resources>
