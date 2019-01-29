@@ -13,7 +13,7 @@ public class ScreenCardValues {
     private TextView m_parTv;
     private Button m_buttonsHandicap; // this is the button pressed for this hole
 
-    public ScreenCardValues( TextView holeTv, TextView handicapTv, TextView parTv) {
+    public ScreenCardValues(TextView holeTv, TextView handicapTv, TextView parTv) {
         m_holeTv = holeTv;
         m_handicapTv = handicapTv;
         m_parTv = parTv;

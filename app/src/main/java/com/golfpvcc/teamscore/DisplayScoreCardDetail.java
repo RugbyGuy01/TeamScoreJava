@@ -86,12 +86,12 @@ public class DisplayScoreCardDetail extends AppCompatActivity {
         String GolfCourseName = m_RealmScoreCardAccess.getTodayGolfCoursename();        // must have a course name to build the score card otherwise see ya
 
         // build player's classes if no player exit screen
-        if( 0 < m_NumberOfPlayers && 3 < GolfCourseName.length()) {
+        if (0 < m_NumberOfPlayers && 3 < GolfCourseName.length()) {
             m_RowCount += m_NumberOfPlayers;
             m_CurrentHole = m_RealmScoreCardAccess.getCurrentGolfHoleBeingPlayed();         // get the hole the app was on when the app exit
 
 
-            if ((m_CurrentHole < 0 || HOLES_18 < m_CurrentHole) && (m_CurrentHole != FRONT_NINE_TOTAL_DISPLAYED) && ( m_CurrentHole != BACK_NINE_TOTAL_DISPLAYED)){
+            if ((m_CurrentHole < 0 || HOLES_18 < m_CurrentHole) && (m_CurrentHole != FRONT_NINE_TOTAL_DISPLAYED) && (m_CurrentHole != BACK_NINE_TOTAL_DISPLAYED)) {
                 m_CurrentHole = 0;  // just in case of garbage in the database
             }
 
@@ -110,11 +110,11 @@ public class DisplayScoreCardDetail extends AppCompatActivity {
             // build score card header and then display it
             m_ScoreCardDisplay = new ScoreCardDisplay(m_ColumnCnt, ScoreCardTable[HOLE_ROW], ScoreCardTable[PAR_ROW], ScoreCardTable[HANDICAP_ROW], m_RealmScoreCardAccess);
 
-            m_ScoreCardDisplay.SetTextViewCourseNameAndMode(this, findViewById(  R.id.textCourseName), findViewById(R.id.tvScoringDisplay),
-                                                            findViewById(R.id.tvCurrentHole), findViewById(R.id.butNextNine));  // set the text view pointer
+            m_ScoreCardDisplay.SetTextViewCourseNameAndMode(this, findViewById(R.id.textCourseName), findViewById(R.id.tvScoringDisplay),
+                    findViewById(R.id.tvCurrentHole), findViewById(R.id.butNextNine));  // set the text view pointer
 
             m_ScoreCardDisplay.DisplayHeader(m_WhatNineIsBeingDisplayed, m_DisplayMode);
-            m_ScoreCardDisplay.DisplayFooter(m_ColumnCnt, ScoreCardTable[PLAYER1_ROW+m_NumberOfPlayers], ScoreCardTable[PLAYER1_ROW+m_NumberOfPlayers+1]);
+            m_ScoreCardDisplay.DisplayFooter(m_ColumnCnt, ScoreCardTable[PLAYER1_ROW + m_NumberOfPlayers], ScoreCardTable[PLAYER1_ROW + m_NumberOfPlayers + 1]);
 
 
             BuildPlayerClass(m_RealmScoreCardAccess, m_NumberOfPlayers, ScoreCardTable, PointQuotaArray);
@@ -271,24 +271,24 @@ This function will populate the data entry of the score card lower screen, Playe
         butAddLister.setOnClickListener(butNavigate);
 
 
-        butAddLister = (Button) findViewById(R.id.Player_minus_0);      // Player 1 minus a stroke on the lower score card
+        butAddLister = findViewById(R.id.Player_minus_0);      // Player 1 minus a stroke on the lower score card
         butAddLister.setOnClickListener(butPlayersScore);
-        butAddLister = (Button) findViewById(R.id.Player_plus_0);       // Player 1 add a stroke on the lower score card
-        butAddLister.setOnClickListener(butPlayersScore);
-
-        butAddLister = (Button) findViewById(R.id.Player_minus_1);      // Player 2 minus a stroke on the lower score card
-        butAddLister.setOnClickListener(butPlayersScore);
-        butAddLister = (Button) findViewById(R.id.Player_plus_1);       // Player 2 add a stroke on the lower score card
+        butAddLister = findViewById(R.id.Player_plus_0);       // Player 1 add a stroke on the lower score card
         butAddLister.setOnClickListener(butPlayersScore);
 
-        butAddLister = (Button) findViewById(R.id.Player_minus_2);      // Player 3 minus a stroke on the lower score card
+        butAddLister = findViewById(R.id.Player_minus_1);      // Player 2 minus a stroke on the lower score card
         butAddLister.setOnClickListener(butPlayersScore);
-        butAddLister = (Button) findViewById(R.id.Player_plus_2);       // Player 3 add a stroke on the lower score card
+        butAddLister = findViewById(R.id.Player_plus_1);       // Player 2 add a stroke on the lower score card
         butAddLister.setOnClickListener(butPlayersScore);
 
-        butAddLister = (Button) findViewById(R.id.Player_minus_3);      // Player 4 minus a stroke on the lower score card
+        butAddLister = findViewById(R.id.Player_minus_2);      // Player 3 minus a stroke on the lower score card
         butAddLister.setOnClickListener(butPlayersScore);
-        butAddLister = (Button) findViewById(R.id.Player_plus_3);       // Player 4 add a stroke on the lower score card
+        butAddLister = findViewById(R.id.Player_plus_2);       // Player 3 add a stroke on the lower score card
+        butAddLister.setOnClickListener(butPlayersScore);
+
+        butAddLister = findViewById(R.id.Player_minus_3);      // Player 4 minus a stroke on the lower score card
+        butAddLister.setOnClickListener(butPlayersScore);
+        butAddLister = findViewById(R.id.Player_plus_3);       // Player 4 add a stroke on the lower score card
         butAddLister.setOnClickListener(butPlayersScore);
 
 
@@ -320,6 +320,7 @@ This function will populate the data entry of the score card lower screen, Playe
             });
         }
     }
+
     /*
      This function will high light the current active hole on the score card
       */
@@ -328,12 +329,12 @@ This function will populate the data entry of the score card lower screen, Playe
 
         SetPlayerScoreEntryToDefualtColor();    // clear the player's team entry to the default color
 
-        m_ScoreCardDisplay.setTheCurrentHoleOnScoreCard((byte)ScoreCardHole);    //display the hole being played
+        m_ScoreCardDisplay.setTheCurrentHoleOnScoreCard((byte) ScoreCardHole);    //display the hole being played
         m_ScoreCardDisplay.ActiveCurrentScoreCardHole(ScoreCardHole);            // high lite the hole being played on the score card
 
         currentHoleDisplay = m_ScoreCardDisplay.getTheCurrentHoleFromScoreCard();
 
-        if( currentHoleDisplay != FRONT_NINE_TOTAL_DISPLAYED && currentHoleDisplay != BACK_NINE_TOTAL_DISPLAYED) {
+        if (currentHoleDisplay != FRONT_NINE_TOTAL_DISPLAYED && currentHoleDisplay != BACK_NINE_TOTAL_DISPLAYED) {
             for (int Inx = 0; Inx < m_NumberOfPlayers; Inx++) {
                 m_DisplayPlayerScore[Inx].MoveNextHoleScoreToLowerHalfOfScreen(currentHoleDisplay); // Display the player's current hole score in the lower half of the screen
 
@@ -350,6 +351,7 @@ This function will populate the data entry of the score card lower screen, Playe
             m_DisplayPlayerScore[Inx].setPlayerMaskToDefaultColor();
         }
     }
+
     /*
     This function handles the navigation on the main score card screen - Prev & Prev buttons, Front/Back nine, gross or net or Pt Quota and summary buttons
      */
@@ -380,6 +382,7 @@ This function will populate the data entry of the score card lower screen, Playe
             }
         }
     };
+
     /*
     This function will handle displaying the front or back on the score card
      */
@@ -429,6 +432,7 @@ This function will populate the data entry of the score card lower screen, Playe
                 break;
         }
     }
+
     /*
     This function will save the player's score to the database and add the score to the score card.
     Screen Display States: Front Nine Scores, Front Nine Totals, Back Nine Scores, Back Nine Totals
@@ -443,16 +447,21 @@ This function will populate the data entry of the score card lower screen, Playe
         switch (currentHoleDisplay) {
             case FRONT_NINE_TOTAL_DISPLAYED:        // the screen is displaying the nine hole totals - move on to the back nine
                 NextHandleTheFrontNineTotals(NINETH_HOLE);      // holes are zero based, this is the tenth hole to display
+                MovePlayerScoreToLowerHalfOfScreen(NINETH_HOLE);
                 break;
+
             case BACK_NINE_TOTAL_DISPLAYED:     // the screen is display the nine hole totals
                 NextHandleTheFrontNineTotals(FIRST_HOLE);
+                MovePlayerScoreToLowerHalfOfScreen(FIRST_HOLE);
                 break;
 
             default:
                 NextSavePlayerScore(currentHoleDisplay, m_DisplayMode);
                 break;
         }
+
     }
+
     /*
     This function will validate the correct screen is being display to the user before handling the Prev button
     if  currentHoleDisplay < 9 || currentHoleDisplay == FRONT_NINE_TOTAL_DISPLAYED
@@ -460,24 +469,24 @@ This function will populate the data entry of the score card lower screen, Playe
      */
     private void ValidatePrevScreenDisplay(int currentHoleDisplay) {
 
-        switch( currentHoleDisplay ){
+        switch (currentHoleDisplay) {
             case FRONT_NINE_TOTAL_DISPLAYED:
             case BACK_NINE_TOTAL_DISPLAYED:
                 // do nothing, displaying total cell, just move back one
                 break;
 
             default:
-                if (currentHoleDisplay < NINETH_HOLE  && m_WhatNineIsBeingDisplayed == DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY) {
+                if (currentHoleDisplay < NINETH_HOLE && m_WhatNineIsBeingDisplayed == DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY) {
                     m_WhatNineIsBeingDisplayed = DisplayScoreCardDetail.WhatNineIsDisplayed.FRONT_NINE_DISPLAYED;
                     RedisplayScoreCardFrontOrBackNine(m_WhatNineIsBeingDisplayed, m_NumberOfPlayers, m_DisplayMode);          // redisplay the front nine score
-                }
-                else if ( NINETH_HOLE_ZB < currentHoleDisplay  && m_WhatNineIsBeingDisplayed == DisplayScoreCardDetail.WhatNineIsDisplayed.FRONT_NINE_DISPLAYED) {
+                } else if (NINETH_HOLE_ZB < currentHoleDisplay && m_WhatNineIsBeingDisplayed == DisplayScoreCardDetail.WhatNineIsDisplayed.FRONT_NINE_DISPLAYED) {
                     m_WhatNineIsBeingDisplayed = DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY;
                     RedisplayScoreCardFrontOrBackNine(m_WhatNineIsBeingDisplayed, m_NumberOfPlayers, m_DisplayMode);          // redisplay the back nine score
                 }
 
         }
     }
+
     /*
     This function will validate the correct screen is being display to the user before handling the Next button
      */
@@ -486,12 +495,12 @@ This function will populate the data entry of the score card lower screen, Playe
         if ((currentHoleDisplay < NINETH_HOLE || currentHoleDisplay == FRONT_NINE_TOTAL_DISPLAYED) && m_WhatNineIsBeingDisplayed == DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY) {
             m_WhatNineIsBeingDisplayed = DisplayScoreCardDetail.WhatNineIsDisplayed.FRONT_NINE_DISPLAYED;
             RedisplayScoreCardFrontOrBackNine(m_WhatNineIsBeingDisplayed, m_NumberOfPlayers, m_DisplayMode);          // redisplay the front nine score
-        }
-        else if (( NINETH_HOLE_ZB < currentHoleDisplay|| currentHoleDisplay == BACK_NINE_TOTAL_DISPLAYED) && m_WhatNineIsBeingDisplayed == DisplayScoreCardDetail.WhatNineIsDisplayed.FRONT_NINE_DISPLAYED) {
+        } else if ((NINETH_HOLE_ZB < currentHoleDisplay || currentHoleDisplay == BACK_NINE_TOTAL_DISPLAYED) && m_WhatNineIsBeingDisplayed == DisplayScoreCardDetail.WhatNineIsDisplayed.FRONT_NINE_DISPLAYED) {
             m_WhatNineIsBeingDisplayed = DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY;
             RedisplayScoreCardFrontOrBackNine(m_WhatNineIsBeingDisplayed, m_NumberOfPlayers, m_DisplayMode);          // redisplay the back nine score
         }
     }
+
     /*
     This function will display the previous hole on the score card
      */
@@ -501,7 +510,7 @@ This function will populate the data entry of the score card lower screen, Playe
         CurrentHole = m_ScoreCardDisplay.PrevHoleOnScoreCard(CurrentHole);     // the current hole display is Zero based
 
         for (Inx = 0; Inx < m_NumberOfPlayers; Inx++) {
-            if( CurrentHole != FRONT_NINE_TOTAL_DISPLAYED && CurrentHole != BACK_NINE_TOTAL_DISPLAYED) {
+            if (CurrentHole != FRONT_NINE_TOTAL_DISPLAYED && CurrentHole != BACK_NINE_TOTAL_DISPLAYED) {
                 m_DisplayPlayerScore[Inx].setPlayerMaskToDefaultColor();                       // clear the screen high light for hole and player's name
                 m_DisplayPlayerScore[Inx].MoveNextHoleScoreToLowerHalfOfScreen(CurrentHole);
             }
@@ -512,7 +521,7 @@ This function will populate the data entry of the score card lower screen, Playe
     This function will save the player's score to the database - team mask is set when the user selects which score will be a team score
      */
     public void NextSavePlayerScore(int CurrentHole, int DisplayMode) {
-        int Inx;
+        int Inx, NextHole;
 
         m_TeamScoreTotals.ClearHole(CurrentHole);       // make sure the team score for this is set to zero
         for (Inx = 0; Inx < m_NumberOfPlayers; Inx++) {
@@ -521,12 +530,19 @@ This function will populate the data entry of the score card lower screen, Playe
 
             m_DisplayPlayerScore[Inx].MovePlayerTeamScoreToTeamScoreTotal(CurrentHole, m_TeamScoreTotals, DisplayMode);  // Save the player's team score to the master team class
         }
-        m_ScoreCardDisplay.DisplayTeamScoresOnScoreCard( m_TeamScoreTotals, m_WhatNineIsBeingDisplayed );
+        m_ScoreCardDisplay.DisplayTeamScoresOnScoreCard(m_TeamScoreTotals, m_WhatNineIsBeingDisplayed);
 
-        CurrentHole = m_ScoreCardDisplay.NextHoleOnScoreCard(CurrentHole);     // the current hole display is Zero based
+        NextHole = m_ScoreCardDisplay.NextHoleOnScoreCard(CurrentHole);     // the current hole display is Zero based
+        MovePlayerScoreToLowerHalfOfScreen(NextHole);
+    }
 
-        for (Inx = 0; Inx < m_NumberOfPlayers; Inx++) {
-            if( CurrentHole != FRONT_NINE_TOTAL_DISPLAYED && CurrentHole != BACK_NINE_TOTAL_DISPLAYED) {
+    /*
+    This function will move the player's score for the hole to lower half of the score entry area.
+     */
+    public void MovePlayerScoreToLowerHalfOfScreen(int CurrentHole) {
+
+        for (int Inx = 0; Inx < m_NumberOfPlayers; Inx++) {
+            if (CurrentHole != FRONT_NINE_TOTAL_DISPLAYED && CurrentHole != BACK_NINE_TOTAL_DISPLAYED) {
                 m_DisplayPlayerScore[Inx].MoveNextHoleScoreToLowerHalfOfScreen(CurrentHole);
             }
         }
@@ -538,15 +554,16 @@ This function will populate the data entry of the score card lower screen, Playe
     private void PrevHandleTheFrontNineTotals(int CurrentHole) {
         int Inx;
 
-        if( CurrentHole == FRONT_NINE_TOTAL_DISPLAYED)
+        if (CurrentHole == FRONT_NINE_TOTAL_DISPLAYED)
             m_WhatNineIsBeingDisplayed = DisplayScoreCardDetail.WhatNineIsDisplayed.FRONT_NINE_DISPLAYED;
         else
             m_WhatNineIsBeingDisplayed = DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY;
 
         RedisplayScoreCardFrontOrBackNine(m_WhatNineIsBeingDisplayed, m_NumberOfPlayers, m_DisplayMode);          // display the Front or back nine score
 
-        m_ScoreCardDisplay.HighLightTheFirstHoleOnScoreCard((byte)CurrentHole);     // the current hole display is Zero based
+        m_ScoreCardDisplay.HighLightTheFirstHoleOnScoreCard((byte) CurrentHole);     // the current hole display is Zero based
     }
+
     /*
             Screen Display States == Front Nine Totals
                 Screen Display States = Back Nine Scores
@@ -558,7 +575,7 @@ This function will populate the data entry of the score card lower screen, Playe
     private void NextHandleTheFrontNineTotals(int CurrentHole) {
         int Inx;
 
-        if( CurrentHole == NINETH_HOLE)
+        if (CurrentHole == NINETH_HOLE)
             m_WhatNineIsBeingDisplayed = DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY;
         else
             m_WhatNineIsBeingDisplayed = DisplayScoreCardDetail.WhatNineIsDisplayed.FRONT_NINE_DISPLAYED;
@@ -568,7 +585,7 @@ This function will populate the data entry of the score card lower screen, Playe
         for (Inx = 0; Inx < m_NumberOfPlayers; Inx++) {
             m_DisplayPlayerScore[Inx].MoveScoreToScoreCard(CurrentHole, m_DisplayMode, m_WhatNineIsBeingDisplayed);
         }
-        m_ScoreCardDisplay.HighLightTheFirstHoleOnScoreCard((byte)CurrentHole);     // the current hole display is Zero based
+        m_ScoreCardDisplay.HighLightTheFirstHoleOnScoreCard((byte) CurrentHole);     // the current hole display is Zero based
     }
 
     /*
@@ -579,7 +596,7 @@ This function will populate the data entry of the score card lower screen, Playe
         @Override
         public void onClick(View view) {
             String ButDisplayModeText = "";
-            Button butDisplayMode = (Button) findViewById(R.id.butDisplayMode);
+            Button butDisplayMode = findViewById(R.id.butDisplayMode);
 
             switch (m_DisplayMode) {
                 case DISPLAY_MODE_GROSS:
@@ -606,6 +623,7 @@ This function will populate the data entry of the score card lower screen, Playe
 
         }
     };
+
     /*
 This function will update the score card with the hole numbers, handicap and par for the front or back nine holes.
 The Set button text will be used to configure the button
@@ -613,8 +631,8 @@ The Set button text will be used to configure the button
     private void RedisplayScoreCardFrontOrBackNine(DisplayScoreCardDetail.WhatNineIsDisplayed DisplayFrontOrBackScoreCard, int NumberOfPlayers, int DisplayMode) {
         m_TeamScoreTotals.ClearAll();
 
-        m_ScoreCardDisplay.DisplayHoleParHandicapsOnScoreCard( DisplayFrontOrBackScoreCard );
-        for( int Inx = 0; Inx < NumberOfPlayers; Inx++){
+        m_ScoreCardDisplay.DisplayHoleParHandicapsOnScoreCard(DisplayFrontOrBackScoreCard);
+        for (int Inx = 0; Inx < NumberOfPlayers; Inx++) {
             m_DisplayPlayerScore[Inx].TeamClearHoleMask();
             m_DisplayPlayerScore[Inx].SetBackgroundColorForStrokeHoles(DisplayFrontOrBackScoreCard, DisplayMode);
             m_DisplayPlayerScore[Inx].DisplayPlayerTotalScore(DisplayFrontOrBackScoreCard, DisplayMode);
@@ -622,7 +640,7 @@ The Set button text will be used to configure the button
             m_DisplayPlayerScore[Inx].updateTeamScoreTotals(m_TeamScoreTotals, DisplayFrontOrBackScoreCard, DisplayMode); // get the team score from each player
         }
 
-        m_ScoreCardDisplay.DisplayTeamScoresOnScoreCard( m_TeamScoreTotals, DisplayFrontOrBackScoreCard);            // display the team scores on the score card
+        m_ScoreCardDisplay.DisplayTeamScoresOnScoreCard(m_TeamScoreTotals, DisplayFrontOrBackScoreCard);            // display the team scores on the score card
 
     }
 
@@ -678,7 +696,7 @@ This function handles the next and previous button click
         public void onClick(View view) {
             int textId = view.getId();
 
-            int CurrentHole =  m_ScoreCardDisplay.getTheCurrentHoleFromScoreCard();
+            int CurrentHole = m_ScoreCardDisplay.getTheCurrentHoleFromScoreCard();
 
             switch (textId) {
                 case R.id.Player_hole_score_0: // selecting the player's name, the team score will use the handicap score for the hole
@@ -703,11 +721,11 @@ This function handles the next and previous button click
     /*
 This function will handle the team score from the player's current score. The user is high lighting the player's Net
 */
-    private View.OnClickListener tvTeamNetScoring  = new View.OnClickListener() {
+    private View.OnClickListener tvTeamNetScoring = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             int textId = view.getId();
-            int CurrentHole =  m_ScoreCardDisplay.getTheCurrentHoleFromScoreCard();
+            int CurrentHole = m_ScoreCardDisplay.getTheCurrentHoleFromScoreCard();
 
             switch (textId) {
                 case R.id.Player_Name_0: // selecting the player's name, the team score will use the handicap score for the hole
@@ -728,12 +746,13 @@ This function will handle the team score from the player's current score. The us
             }
         }
     };
+
     /*
   This function will handler the long click for team scoring - the player's net score will be used twice - ie main in the box type of scoring
    */
     private void tvPlayCurScoreDoubleGrossTeamScoring(View view) {
         int textId = view.getId();   // the id of the text view being long clicked - Player's name used for team scoring using the score twice - in man in the box scoring
-        int CurrentHole =  m_ScoreCardDisplay.getTheCurrentHoleFromScoreCard();
+        int CurrentHole = m_ScoreCardDisplay.getTheCurrentHoleFromScoreCard();
 
         switch (textId) {
             case R.id.Player_hole_score_0:  // selecting the player's current score, the team score will use the net score for the hole
@@ -753,12 +772,13 @@ This function will handle the team score from the player's current score. The us
                 Toast.makeText(DisplayScoreCardDetail.this, "tvTeamGrossScoring not coded " + textId, LENGTH_SHORT).show();
         }
     }
+
     /*
     This function will handler the long click for team scoring - the player's gross score will be used twice - ie man in the box type of scoring
      */
     private void tvPlayNameDoubleNetLongTeamScoring(View view) {
         int textId = view.getId();   // the id of the text view being long clicked - Player's name used for team scoring using the score twice - in man in the box scoring
-        int CurrentHole =  m_ScoreCardDisplay.getTheCurrentHoleFromScoreCard();
+        int CurrentHole = m_ScoreCardDisplay.getTheCurrentHoleFromScoreCard();
 
         switch (textId) {
             case R.id.Player_Name_0:  // selecting the player's score, the team score will use the net score for the hole
@@ -777,6 +797,7 @@ This function will handle the team score from the player's current score. The us
                 Toast.makeText(DisplayScoreCardDetail.this, "tvPlayGrossLongTeamScoring not coded " + textId, LENGTH_SHORT).show();
         }
     }
+
     /*
         This function will load the Point Quote values into the point quato array - the user can set the values for the course select menu (upper right ...)
         */
@@ -804,6 +825,7 @@ This function will handle the team score from the player's current score. The us
         }
         return PointQuota;
     }
+
     /*
 This is a common exit point for this screen.
  */

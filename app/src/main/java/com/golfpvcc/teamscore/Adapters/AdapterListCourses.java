@@ -27,6 +27,7 @@ public class AdapterListCourses extends RecyclerView.Adapter<RecyclerView.ViewHo
     public static final int ITEM = 0;
     public static final int FOOTER = 1;
     private AddCourseListener mAddNewCourseListener;
+
     /*
     Construct for the adapter
      */
@@ -47,6 +48,7 @@ public class AdapterListCourses extends RecyclerView.Adapter<RecyclerView.ViewHo
         update(Results);
         mAddNewCourseListener = mListener;
     }
+
     /*
     This function will update the adapter (display) when the database results haved changed
      */
@@ -54,6 +56,7 @@ public class AdapterListCourses extends RecyclerView.Adapter<RecyclerView.ViewHo
         m_CourseListResults = Results;
         notifyDataSetChanged();     // tells the display to update the screen
     }
+
     /*
     The view type is a course record view or the last item which is the add course footer button
      */
@@ -66,6 +69,7 @@ public class AdapterListCourses extends RecyclerView.Adapter<RecyclerView.ViewHo
             return FOOTER;
         }
     }
+
     /*
        This function will create one record view for the recycler view.
     */
@@ -81,6 +85,7 @@ public class AdapterListCourses extends RecyclerView.Adapter<RecyclerView.ViewHo
             return (new CourseHolder(CourseRowView, mAddNewCourseListener));
         }
     }
+
     /*
     The binder view holder display one course record in the recycler view
      */
@@ -94,13 +99,15 @@ public class AdapterListCourses extends RecyclerView.Adapter<RecyclerView.ViewHo
             CourseRecordHolder.mCourseName.setText(CourseRecord.getM_courseName()); // now display the course name on the scrren
         }
     }
+
     @Override
     public int getItemCount() {
-        if(m_CourseListResults == null || m_CourseListResults.isEmpty())
+        if (m_CourseListResults == null || m_CourseListResults.isEmpty())
             return 0;
         else
             return m_CourseListResults.size() + 1;  // the one is for the footer (Add Course Record Button)
     }
+
     /*
     This is the interface for the swipe listener
      */
@@ -113,28 +120,32 @@ public class AdapterListCourses extends RecyclerView.Adapter<RecyclerView.ViewHo
             notifyItemRemoved(position);
         }
     }
+
     /*
     This function is use to return an Item just in case the sort feature has zero results
      */
     @Override
     public long getItemId(int position) {
-        if( position < m_CourseListResults.size()){
+        if (position < m_CourseListResults.size()) {
             return m_CourseListResults.get(position).getAddedDated();   // need an Id for each record
         }
         return RecyclerView.NO_ID;
     }
+
     /*
     This function will get the current record selected by the user.
      */
     public CourseListRecord getCurrentRecord(int position) {
         return m_CourseListResults.get(position);
     }
+
     /*
         The Course holder displays one golf course in the recycler view
     */
     public static class CourseHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView mCourseName, mCourseStatus;
         AddCourseListener mEditCourseListener;
+
         /*
         Constructor
          */
@@ -145,15 +156,17 @@ public class AdapterListCourses extends RecyclerView.Adapter<RecyclerView.ViewHo
             mCourseStatus = (TextView) itemView.findViewById(R.id.courseStatus);
             mEditCourseListener = EditCourseListener;
         }
-    /*
-    This function call when a recycler view item is selected - The getAdapterPosition() will return the record index into the database.
-    */
+
+        /*
+        This function call when a recycler view item is selected - The getAdapterPosition() will return the record index into the database.
+        */
         @Override
         public void onClick(View view) {
 
             mEditCourseListener.EditCourse(getAdapterPosition());
         }
     }
+
     /*
     The Footer holder displays add course button in the recycler view
     */
@@ -169,6 +182,7 @@ public class AdapterListCourses extends RecyclerView.Adapter<RecyclerView.ViewHo
             AddCourseBtn = (Button) itemView.findViewById(R.id.btn_footer);
             AddCourseBtn.setOnClickListener(this);
         }
+
         /*
         Constructor
          */
@@ -178,6 +192,7 @@ public class AdapterListCourses extends RecyclerView.Adapter<RecyclerView.ViewHo
             AddCourseBtn.setOnClickListener(this);
             mAddNewCourseListener = AddNewCourseListener;
         }
+
         /*
         When the "Add a Course " buttom is click, the on Click function is called which calls the function in the course setup activity
         */

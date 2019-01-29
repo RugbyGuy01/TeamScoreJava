@@ -56,6 +56,7 @@ public class SimpleTouchCallback extends ItemTouchHelper.Callback {
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         }
     }
+
     /*
     This function is called when the user starts a swipe on a course record on the screen. if not a course record do not let the item move.
      */
@@ -65,6 +66,7 @@ public class SimpleTouchCallback extends ItemTouchHelper.Callback {
             super.onChildDrawOver(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         }
     }
+
     /*
         The on Swiped is called after the user has swiped the item. However you can not swipte the footer. The course holder holds a course record.
          */

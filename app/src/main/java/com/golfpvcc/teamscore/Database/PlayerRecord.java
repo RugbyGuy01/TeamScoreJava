@@ -28,7 +28,7 @@ public class PlayerRecord extends RealmObject {
         return m_Handicap;
     }
 
-    public String  get_PlayerName() {
+    public String get_PlayerName() {
         return m_Name;
     }
 

@@ -37,8 +37,8 @@ public class CourseListRecord extends RealmObject {
         return m_HolesPar;
     }
 
-    public long getAddedDated(){
-        return  mAddedDated;
+    public long getAddedDated() {
+        return mAddedDated;
     }
 
     public void setM_HolesPar(String HolesPar) {

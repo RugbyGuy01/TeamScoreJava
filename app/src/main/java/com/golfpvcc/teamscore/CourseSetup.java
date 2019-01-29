@@ -441,9 +441,9 @@ public class CourseSetup extends DialogFragment {
             } else {
                 tmp_TextView.setText("" + HandicapForHole); // now figure out which button we need to make invisible
 
-                if((HandicapForHole % 2) == 0){         // if the handicap is even
+                if ((HandicapForHole % 2) == 0) {         // if the handicap is even
                     hdcpInx = (HandicapForHole - 2) / 2;
-                }else {
+                } else {
                     hdcpInx = (HandicapForHole - 1) / 2;
                 }
                 // figure out which of the nine button this handicap - front nine would be  but1 = 1,  but2 = 3, but 3 = 5
@@ -456,6 +456,7 @@ public class CourseSetup extends DialogFragment {
         tmp_TextView.setBackgroundColor(Color.MAGENTA);     // set the gross score on the card
 
     }
+
     /*
   This function will set the handicap buttons to Visible
    */

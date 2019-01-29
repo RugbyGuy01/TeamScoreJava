@@ -54,6 +54,7 @@ public class DisplayPlayerScoreData extends TeamPlayerScoreData {
     private int[] m_PointQuotaArray, m_SummaryStokeScore;
     private HoleStokeDetails[] m_HoleDetails;
     private TextView m_tvPlayerName, m_tvTotal, m_tvCurrentHoleScore, m_tvPlayerNameDataEntry;
+
     /*
     Constructor
      */
@@ -71,16 +72,17 @@ public class DisplayPlayerScoreData extends TeamPlayerScoreData {
         m_HoleDetails = new HoleStokeDetails[HOLES_18];         // Declare an array of classes to hold HoleStokeDetails
         m_tvPlayerName = tvCells[ScreenCellInx++];            // Player' name, [0]
 
-        for( FrontNineInx = 0; FrontNineInx < SCREENHOLES; FrontNineInx++, BackNineInx++, ScreenCellInx++){ // the screen only needs 9 text views, the players 18 hole data will use the same text views for hole 1 & 10
+        for (FrontNineInx = 0; FrontNineInx < SCREENHOLES; FrontNineInx++, BackNineInx++, ScreenCellInx++) { // the screen only needs 9 text views, the players 18 hole data will use the same text views for hole 1 & 10
 
-            m_HoleDetails[FrontNineInx] = new HoleStokeDetails( tvCells[ScreenCellInx]);  // The TV for the player's score on the card are zero based
-            m_HoleDetails[BackNineInx] = new HoleStokeDetails( tvCells[ScreenCellInx]);  // cell zero is the player's name, Text Views are for the screen score card - only need 9 of them 1-9 and 10-18
+            m_HoleDetails[FrontNineInx] = new HoleStokeDetails(tvCells[ScreenCellInx]);  // The TV for the player's score on the card are zero based
+            m_HoleDetails[BackNineInx] = new HoleStokeDetails(tvCells[ScreenCellInx]);  // cell zero is the player's name, Text Views are for the screen score card - only need 9 of them 1-9 and 10-18
         }
         m_tvTotal = tvCells[ScreenCellInx];       // text view for the total score [10]
 
         PlayerName = m_PlayerDataBaseRecord.get_PlayerName();
         m_tvPlayerName.setText(PlayerName);
     }
+
     /*
     This function used by the Main Summary Activity to calculate play's scores.
      */
@@ -90,7 +92,7 @@ public class DisplayPlayerScoreData extends TeamPlayerScoreData {
         m_PointQuotaArray = PointQuota;
         m_PlayerDataBaseRecord = PlayerDatabaseRec;        // access into the database for this player name, scores and handicap
         m_HoleDetails = new HoleStokeDetails[HOLES_18];         // Declare an array of classes to hold HoleStokeDetails
-        for( int Hole = 0; Hole < HOLES_18; Hole++){
+        for (int Hole = 0; Hole < HOLES_18; Hole++) {
             m_HoleDetails[Hole] = new HoleStokeDetails();       // declare hole class
         }
 
@@ -102,31 +104,33 @@ public class DisplayPlayerScoreData extends TeamPlayerScoreData {
             m_SummaryStokeScore[i] = 0;         // clear array
         }
     }
+
     /*
     This function will load the saved player's score into the HoleStokeDetails class
      */
-    public void LoadPlayerScoresIntoHoleClass(){
+    public void LoadPlayerScoresIntoHoleClass() {
         int Hole;
         byte PlayerScore, TeamMask;
         byte[] mByteScore = m_PlayerDataBaseRecord.getmByteScore();     // read the database record for the player's score, this record is zero based
 
-        for( Hole = 0;  Hole < HOLES_18; Hole++){
-            PlayerScore = (byte)(JUST_RAW_SCORE & mByteScore[Hole]);
+        for (Hole = 0; Hole < HOLES_18; Hole++) {
+            PlayerScore = (byte) (JUST_RAW_SCORE & mByteScore[Hole]);
             m_HoleDetails[Hole].setPlayerGrossScore(PlayerScore);
-            TeamMask = (byte)(TEAM_SCORE & mByteScore[Hole]);
+            TeamMask = (byte) (TEAM_SCORE & mByteScore[Hole]);
             m_HoleDetails[Hole].setTeamHoleMask(TeamMask);
         }
     }
+
     /*
     This function will load the player's quota score into Holes Class on start up.
      */
     public void LoadPlayerQuotaScores() {
         byte GrossScore, ParForHole, PointQuotaScore;
 
-        for( int Hole = 0;  Hole < HOLES_18; Hole++) {
+        for (int Hole = 0; Hole < HOLES_18; Hole++) {
 
-            GrossScore = (byte)m_HoleDetails[Hole].getGrossScore();
-            if( 0 < GrossScore) {
+            GrossScore = (byte) m_HoleDetails[Hole].getGrossScore();
+            if (0 < GrossScore) {
                 ParForHole = GetTeamTheParForThisHole(Hole);
 
                 PointQuotaScore = (byte) (GrossScore - ParForHole);
@@ -135,38 +139,40 @@ public class DisplayPlayerScoreData extends TeamPlayerScoreData {
             }
         }
     }
+
     /*
     This function will determine what type of high light box will be used on the score card.  The drawable files must have the background color for the text view in the file,
     therefore app need six different file to cover all of the case.
      */
-    private void SetTeamBoxHighLightOnScoreCard( int currentHole ) {
+    private void SetTeamBoxHighLightOnScoreCard(int currentHole) {
         byte TeamMask, ShotPerHole;
         int ID_BoxHighLight = 0;
 
         TeamMask = m_HoleDetails[currentHole].getTeamHoleMask();
         ShotPerHole = m_HoleDetails[currentHole].getNumberOfShotsForThisHole();
 
-        switch(TeamMask){
+        switch (TeamMask) {
             case (TEAM_GROSS_SCORE + DOUBLE_TEAM_SCORE):
-                ID_BoxHighLight = DisplayGrossDoubleBox( ShotPerHole);
+                ID_BoxHighLight = DisplayGrossDoubleBox(ShotPerHole);
                 break;
 
             case (TEAM_NET_SCORE + DOUBLE_TEAM_SCORE):
-                ID_BoxHighLight = DisplayNetDoubleBox( ShotPerHole);
+                ID_BoxHighLight = DisplayNetDoubleBox(ShotPerHole);
                 break;
 
             case TEAM_GROSS_SCORE:
-                ID_BoxHighLight = DisplayGrossBox( ShotPerHole);
+                ID_BoxHighLight = DisplayGrossBox(ShotPerHole);
                 break;
 
             case TEAM_NET_SCORE:
-                ID_BoxHighLight = DisplayNetBox( ShotPerHole);
+                ID_BoxHighLight = DisplayNetBox(ShotPerHole);
                 break;
         }
 
-        if( 0 < ID_BoxHighLight)
+        if (0 < ID_BoxHighLight)
             m_HoleDetails[currentHole].m_tvScoreCell.setBackground(ContextCompat.getDrawable(m_Context, ID_BoxHighLight));
     }
+
     /*
      *********************** Here are the function for the lower half of the screen ********************
      */
@@ -176,10 +182,11 @@ This function saves the text view for the lower half of the screen data entry - 
     public void setTvPlayerLowerCurScore(TextView tvCurrentHoleScore) {
         m_tvCurrentHoleScore = tvCurrentHoleScore;
     }
+
     /*
     This function will return the text view of the player current hole score on the lower half of the screen
      */
-    public TextView getTvPlayerLowerCurScore( ) {
+    public TextView getTvPlayerLowerCurScore() {
         return m_tvCurrentHoleScore;
     }
 
@@ -189,10 +196,11 @@ This function will save the Text View for the player's name on the lower half of
     public void setTvPlayerLowerName(TextView tv_tmp) {
         m_tvPlayerNameDataEntry = tv_tmp;
     }
+
     /*
     This function will return the text view of the player name on the lower half of the screen
      */
-    public TextView getTvPlayerLowerName( ) {
+    public TextView getTvPlayerLowerName() {
         return m_tvPlayerNameDataEntry;
     }
 
@@ -204,6 +212,7 @@ This function will add the golfer name to the lower part of the score card.
         PlayerName = m_PlayerDataBaseRecord.get_PlayerName();
         m_tvPlayerNameDataEntry.setText(m_PlayerHandicap + " - " + PlayerName);
     }
+
     /*
     This function will add a stroke to the current player's score - Will stop after 9 strokes on a hole
     mTvPlayerCurScore.setText(Integer.toString(mIntPlayer_CurrentHoleScore));           // just display the current hole score on the screen
@@ -212,7 +221,7 @@ This function will add the golfer name to the lower part of the score card.
         int intCurrentScore;
 
         intCurrentScore = GetCurrentPlayerLowerScore();
-        if( intCurrentScore < 9)
+        if (intCurrentScore < 9)
             intCurrentScore++;
         SetCurrentPlayerLowerScore(intCurrentScore);
     }
@@ -223,10 +232,11 @@ This function will add the golfer name to the lower part of the score card.
     public void SubtractStrokeToCurrentScore() {
         int intCurrentScore;
         intCurrentScore = GetCurrentPlayerLowerScore();
-        if( 1 < intCurrentScore)
+        if (1 < intCurrentScore)
             intCurrentScore--;
         SetCurrentPlayerLowerScore(intCurrentScore);
     }
+
     /*
     This function will get the player score from the lower have of the screen
      */
@@ -234,18 +244,19 @@ This function will add the golfer name to the lower part of the score card.
         String strCurrentScore;
         int intCurrentScore;
 
-        strCurrentScore =  m_tvCurrentHoleScore.getText().toString();
+        strCurrentScore = m_tvCurrentHoleScore.getText().toString();
         intCurrentScore = Integer.parseInt(strCurrentScore);
 
         return intCurrentScore;
     }
+
     /*
     This function will save the player's current score into the database ??
      */
     public void SavePlayerHoleScoreToDatabase(RealmScoreCardAccess realmScoreCardAccess, int CurrentHole) {
         byte CurrentHoleScore, ParForHole, PointQuotaScore;
 
-        CurrentHoleScore = (byte)GetCurrentPlayerLowerScore();          // read the text view of the lower score entry and converts the string to an int
+        CurrentHoleScore = (byte) GetCurrentPlayerLowerScore();          // read the text view of the lower score entry and converts the string to an int
         m_HoleDetails[CurrentHole].setPlayerGrossScore(CurrentHoleScore);
 
         ParForHole = GetTeamTheParForThisHole(CurrentHole);
@@ -258,22 +269,22 @@ This function will add the golfer name to the lower part of the score card.
 
         realmScoreCardAccess.SaveThePlayerHoleScore(m_PlayerDataBaseRecord, CurrentHole, CurrentHoleScore); // save the score
     }
+
     /*
     This function will handle the user selecting a team gross score using the lower half of the screen by clicking on the players name
      */
-    public void SetTeamGrossScore(int CurrentHole ) {
+    public void SetTeamGrossScore(int CurrentHole) {
         int TeamRealScoreMask;
-        String TeamScoreColor;;
+        String TeamScoreColor;
+        ;
 
         setPlayerMaskToDefaultColor();      // clear the screen high light for hole and player's name
         TeamRealScoreMask = m_HoleDetails[CurrentHole].getTeamHoleMask();
 
         if (TEAM_GROSS_SCORE == TeamRealScoreMask) {
             m_HoleDetails[CurrentHole].setTeamHoleMask((byte) 0);   // clear the flag
-        }
-        else
-        {
-            m_HoleDetails[CurrentHole].setTeamHoleMask((byte)TEAM_GROSS_SCORE);
+        } else {
+            m_HoleDetails[CurrentHole].setTeamHoleMask((byte) TEAM_GROSS_SCORE);
             TeamScoreColor = m_Context.getString(Integer.parseInt(String.valueOf(R.color.team_box_high_light_gross_used_once)));    // set the current hole back to the default color
             m_tvCurrentHoleScore.setBackgroundColor(Color.parseColor(TeamScoreColor));     // high light the player current score
         }
@@ -284,41 +295,41 @@ This function will add the golfer name to the lower part of the score card.
      */
     public void SetTeamDoubleGrossScore(int CurrentHole) {
         int TeamRealScoreMask;
-        String TeamScoreColor;;
+        String TeamScoreColor;
+        ;
 
         setPlayerMaskToDefaultColor();      // clear the screen high light for hole and player's name
         TeamRealScoreMask = m_HoleDetails[CurrentHole].getTeamHoleMask();
 
-        if ((TEAM_GROSS_SCORE + DOUBLE_TEAM_SCORE) == TeamRealScoreMask){
+        if ((TEAM_GROSS_SCORE + DOUBLE_TEAM_SCORE) == TeamRealScoreMask) {
             m_HoleDetails[CurrentHole].setTeamHoleMask((byte) 0);   // clear the flag
-        }
-        else
-        {
-            m_HoleDetails[CurrentHole].setTeamHoleMask((byte)(TEAM_GROSS_SCORE + DOUBLE_TEAM_SCORE));
+        } else {
+            m_HoleDetails[CurrentHole].setTeamHoleMask((byte) (TEAM_GROSS_SCORE + DOUBLE_TEAM_SCORE));
             TeamScoreColor = m_Context.getString(Integer.parseInt(String.valueOf(R.color.team_box_high_light_gross_twice)));    // set the current hole back to the default color
             m_tvCurrentHoleScore.setBackgroundColor(Color.parseColor(TeamScoreColor));     // high light the player current score
         }
     }
+
     /*
     This function will handle the user selecting a team net score using the lower half of the screen by clicking on the players current score
      */
     public void SetTeamNetScore(int CurrentHole) {
         int TeamRealScoreMask;
-        String TeamScoreColor;;
+        String TeamScoreColor;
+        ;
 
         setPlayerMaskToDefaultColor();      // clear the screen high light for hole and player's name
         TeamRealScoreMask = m_HoleDetails[CurrentHole].getTeamHoleMask();
 
-        if (TEAM_NET_SCORE == TeamRealScoreMask){
+        if (TEAM_NET_SCORE == TeamRealScoreMask) {
             m_HoleDetails[CurrentHole].setTeamHoleMask((byte) 0);   // clear the flag
-        }
-        else
-        {
-            m_HoleDetails[CurrentHole].setTeamHoleMask((byte)TEAM_NET_SCORE);
+        } else {
+            m_HoleDetails[CurrentHole].setTeamHoleMask((byte) TEAM_NET_SCORE);
             TeamScoreColor = m_Context.getString(Integer.parseInt(String.valueOf(R.color.team_box_high_light_net_used_once)));    // set the current hole back to the default color
             m_tvPlayerNameDataEntry.setBackgroundColor(Color.parseColor(TeamScoreColor));     // high light the player current score
         }
     }
+
     /*
     This function will handle the user selecting a team doublenet score using the lower half of the screen by long clicking on the players current score
      */
@@ -329,32 +340,32 @@ This function will add the golfer name to the lower part of the score card.
         setPlayerMaskToDefaultColor();      // clear the screen high light for hole and player's name
         TeamRealScoreMask = m_HoleDetails[CurrentHole].getTeamHoleMask();
 
-        if ((TEAM_NET_SCORE + DOUBLE_TEAM_SCORE)== TeamRealScoreMask) {
+        if ((TEAM_NET_SCORE + DOUBLE_TEAM_SCORE) == TeamRealScoreMask) {
             m_HoleDetails[CurrentHole].setTeamHoleMask((byte) 0);   // clear the flag
-        } else
-        {
-            m_HoleDetails[CurrentHole].setTeamHoleMask((byte)(TEAM_NET_SCORE + DOUBLE_TEAM_SCORE));
+        } else {
+            m_HoleDetails[CurrentHole].setTeamHoleMask((byte) (TEAM_NET_SCORE + DOUBLE_TEAM_SCORE));
             TeamScoreColor = m_Context.getString(Integer.parseInt(String.valueOf(R.color.team_box_high_light_net_twice)));    // set the current hole back to the default color
             m_tvPlayerNameDataEntry.setBackgroundColor(Color.parseColor(TeamScoreColor));     // high light the player current score
         }
     }
+
     /*
   This function will take the score from the score card and load the lower entry data for the player - if the player score is zero then use the par for the hole
   Previous button was clicked, Set the player current score high light - ie is this score used by the team in a gross or net game.
    */
-    public void MoveNextHoleScoreToLowerHalfOfScreen( int CurrentHole ) {
+    public void MoveNextHoleScoreToLowerHalfOfScreen(int CurrentHole) {
         int TeamRealScoreMask, HoleScore;
         String TeamScoreColor;
 
         HoleScore = m_HoleDetails[CurrentHole].getGrossScore();
-        if( HoleScore == 0){
+        if (HoleScore == 0) {
             HoleScore = GetTeamTheParForThisHole(CurrentHole);      // set the player hole score to Par
         }
-        m_tvCurrentHoleScore.setText(""+HoleScore);
+        m_tvCurrentHoleScore.setText("" + HoleScore);
 
         TeamRealScoreMask = m_HoleDetails[CurrentHole].getTeamHoleMask();
 
-        switch ( TeamRealScoreMask){
+        switch (TeamRealScoreMask) {
             case (TEAM_GROSS_SCORE + DOUBLE_TEAM_SCORE):
                 TeamScoreColor = m_Context.getString(Integer.parseInt(String.valueOf(R.color.team_box_high_light_gross_twice)));    // set the current hole back to the default color
                 break;
@@ -374,12 +385,13 @@ This function will add the golfer name to the lower part of the score card.
                 TeamScoreColor = m_Context.getString(Integer.parseInt(String.valueOf(R.color.default_hole_color)));    // set the current hole back to the default color
                 break;
         }
-        if( (TeamRealScoreMask & TEAM_NET_SCORE) == TEAM_NET_SCORE){
+        if ((TeamRealScoreMask & TEAM_NET_SCORE) == TEAM_NET_SCORE) {
             m_tvPlayerNameDataEntry.setBackgroundColor(Color.parseColor(TeamScoreColor));     // high light the player name score
         } else {
             m_tvCurrentHoleScore.setBackgroundColor(Color.parseColor(TeamScoreColor));     // high light the player current score
         }
     }
+
     /*
     This function will clear the lower half of the screen player's name and current hole score back to the default color
      */
@@ -387,6 +399,7 @@ This function will add the golfer name to the lower part of the score card.
         m_tvPlayerNameDataEntry.setBackgroundColor(Color.WHITE);     // set the gross score on the card
         m_tvCurrentHoleScore.setBackgroundColor(Color.WHITE);       // set the net score on the card
     }
+
     /*
     This function will Set the player score in the lower have of the screen
      */
@@ -394,6 +407,7 @@ This function will add the golfer name to the lower part of the score card.
 
         m_tvCurrentHoleScore.setText(Integer.toString(intCurrentScore));
     }
+
     /*
     This function will set the player hole class to the number of strokes the will get for this hole
      */
@@ -419,13 +433,11 @@ This function will add the golfer name to the lower part of the score card.
         int StartHole = 0, ScoreValue;
         byte ParForHole;
 
-        if( DisplayFrontOrBackScoreCard == DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY)
-        {
+        if (DisplayFrontOrBackScoreCard == DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY) {
             StartHole = NINETH_HOLE;
         }
 
-        for( int ScreenHole = 0; ScreenHole < SCREENHOLES; ScreenHole++)
-        {
+        for (int ScreenHole = 0; ScreenHole < SCREENHOLES; ScreenHole++) {
             MyColor = m_HoleDetails[StartHole].getStrokeBackgroundColor();
             color = m_Context.getString(Integer.parseInt(String.valueOf(MyColor)));    // set the current hole back to the color
             m_HoleDetails[StartHole].m_tvScoreCell.setBackgroundColor(Color.parseColor(color));
@@ -442,30 +454,31 @@ This function will add the golfer name to the lower part of the score card.
             StartHole++;        // next hole on the score card ??
         }
     }
+
     /*
     This function will save the team score dependant on what the display is current to the user.
      */
-    public void SaveTeamCurrentHoleScore(int currentHole, int displayMode){
+    public void SaveTeamCurrentHoleScore(int currentHole, int displayMode) {
         byte TeamHoleMask, ScoreToSave = 0, GrossScore, ParForHole;
 
-        GrossScore = (byte)m_HoleDetails[currentHole].getGrossScore();
+        GrossScore = (byte) m_HoleDetails[currentHole].getGrossScore();
         TeamHoleMask = m_HoleDetails[currentHole].getTeamHoleMask();
         ParForHole = GetTeamTheParForThisHole(currentHole);
 
-        switch( displayMode ){
+        switch (displayMode) {
             case DISPLAY_MODE_GROSS:    // this displays as team over/under on the card
                 ScoreToSave = (byte) (GrossScore - ParForHole);
-                TeamSaveGrossNetTeamScore( currentHole, ScoreToSave, TeamHoleMask, m_HoleDetails[currentHole].getNumberOfShotsForThisHole());
+                TeamSaveGrossNetTeamScore(currentHole, ScoreToSave, TeamHoleMask, m_HoleDetails[currentHole].getNumberOfShotsForThisHole());
                 break;
 
             case DISPLAY_MODE_NET:      // this displays as team score on the card
                 ScoreToSave = GrossScore;
-                TeamSaveGrossNetTeamScore( currentHole, ScoreToSave, TeamHoleMask, m_HoleDetails[currentHole].getNumberOfShotsForThisHole());
+                TeamSaveGrossNetTeamScore(currentHole, ScoreToSave, TeamHoleMask, m_HoleDetails[currentHole].getNumberOfShotsForThisHole());
                 break;
 
             case DISPLAY_MODE_POINT_QUOTA:
                 ScoreToSave = m_HoleDetails[currentHole].getQuotaHoleScore();
-                TeamSavePointTeamScore( currentHole, ScoreToSave, TeamHoleMask, m_HoleDetails[currentHole].getNumberOfShotsForThisHole());
+                TeamSavePointTeamScore(currentHole, ScoreToSave, TeamHoleMask, m_HoleDetails[currentHole].getNumberOfShotsForThisHole());
                 break;
         }
 
@@ -519,6 +532,7 @@ This function returns the score card color for the score vaule.
         }
         return (StrokeColor);
     }
+
     /*
 This function will return the point quota for the score entered
  */
@@ -576,6 +590,7 @@ This function will display the player hole score on to the score card.
         setPlayerMaskToDefaultColor();                       // clear the screen team high light for hole and player's name
         DisplayPlayerTotalScore(WhatNineIsBeingDisplayed, DisplayMode);
     }
+
     /*
     This function will display the total score for the player
      */
@@ -583,11 +598,10 @@ This function will display the player hole score on to the score card.
         int StartHole = 0, TotalPlayerScore = 0;
         float PoinQuotaTargetValue;
 
-        if( DisplayFrontOrBackScoreCard == DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY)
-        {
+        if (DisplayFrontOrBackScoreCard == DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY) {
             StartHole = NINETH_HOLE;
         }
-        for( int ScreenHole = 0; ScreenHole < SCREENHOLES; ScreenHole++) {
+        for (int ScreenHole = 0; ScreenHole < SCREENHOLES; ScreenHole++) {
             switch (displayMode) {
                 case DISPLAY_MODE_GROSS:
                     TotalPlayerScore += m_HoleDetails[StartHole].getGrossScore();
@@ -603,15 +617,16 @@ This function will display the player hole score on to the score card.
             }
             StartHole++;
         }
-        if( displayMode == DISPLAY_MODE_POINT_QUOTA) {
+        if (displayMode == DISPLAY_MODE_POINT_QUOTA) {
             PoinQuotaTargetValue = m_PoinQuotaTargetValue / 2;
             PoinQuotaTargetValue += TotalPlayerScore;
             String strTmp = String.format("%.1f", PoinQuotaTargetValue);
             m_tvTotal.setText(strTmp);
         } else {
-            m_tvTotal.setText(""+ TotalPlayerScore);
+            m_tvTotal.setText("" + TotalPlayerScore);
         }
     }
+
     /*******************
      * Function used by the golf score summary screen - ie first screen that is displayed
      */
@@ -622,6 +637,7 @@ This function will display the player hole score on to the score card.
     public String getPlayerName() {
         return (m_PlayerDataBaseRecord.get_PlayerName());
     }
+
     /*
     This function will return the player's handicap
     */
@@ -656,14 +672,14 @@ This function will calculate the summary of the player's round.
             if (PlayerHoleScore != 0) {
                 TeamHoleMask = m_HoleDetails[CurrentHole].getTeamHoleMask();
                 ShotsForThisHole = m_HoleDetails[CurrentHole].getNumberOfShotsForThisHole();
-                TeamSaveGrossNetTeamScore( CurrentHole, (byte) PlayerHoleScore, TeamHoleMask, ShotsForThisHole);
+                TeamSaveGrossNetTeamScore(CurrentHole, (byte) PlayerHoleScore, TeamHoleMask, ShotsForThisHole);
 
                 m_SummaryStokeScore[SUM_SCORE] += PlayerHoleScore;
                 PlayerQuotaScore = m_HoleDetails[CurrentHole].getQuotaHoleScore();
                 m_SummaryStokeScore[SUM_QUOTA] += PlayerQuotaScore;
 
                 OverUnderScore = PlayerHoleScore - CoursePar[CurrentHole];
-                TeamSaveOverUnderTeamScore( CurrentHole, (byte) OverUnderScore, TeamHoleMask, ShotsForThisHole);
+                TeamSaveOverUnderTeamScore(CurrentHole, (byte) OverUnderScore, TeamHoleMask, ShotsForThisHole);
 
                 switch (OverUnderScore) {
                     case -2:
@@ -688,6 +704,7 @@ This function will calculate the summary of the player's round.
             }
         }
     }
+
     /*
 This function will get the  player's golf summary - "Score", "Quota", "Eagle", "Birdies", " Pars", "Bog", "Dbl", "Othr"
  */
@@ -699,6 +716,7 @@ This function will get the  player's golf summary - "Score", "Quota", "Eagle", "
 
         return (StrokeValue);
     }
+
     /*
     This function will get the front/back point quota total for this player used by the Summary screen of the app.
      */
@@ -713,6 +731,7 @@ This function will get the  player's golf summary - "Score", "Quota", "Eagle", "
         PointQuotaTotal += PoinQuotaTargetValue;  // the target value will alway start of a negative number
         return (PointQuotaTotal);
     }
+
     /*
 This function is used by the email player's score function - build the message body so the user can add it to a excel spreadsheet
  */

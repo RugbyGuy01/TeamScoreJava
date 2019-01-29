@@ -8,13 +8,13 @@ public class EmailScores {
     private String[] m_To = {"vgamble@golfpvcc.com"};
     private String m_Subject = "Team Score";
     private String m_Body = "my scores";
-    public Context m_Context;
+    private Context m_Context;
 
-    public EmailScores( Context context) {
+    public EmailScores(Context context) {
         m_Context = context;
     }
 
-    public void ToPostOffice(){
+    public void ToPostOffice() {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setData(Uri.parse("mailto:"));
         intent.putExtra(Intent.EXTRA_EMAIL, m_To);
@@ -25,13 +25,16 @@ public class EmailScores {
         Intent chooser = Intent.createChooser(intent, "Send Email");
         m_Context.startActivity(chooser);
     }
+
     public void SetEmailAddress(String EmailAddress) {
         m_To[0] = EmailAddress;
     }
-    public void SetEmailSubject( String Subject ){
+
+    public void SetEmailSubject(String Subject) {
         m_Subject = Subject;
     }
-    public void SetEmailBody( String Body){
+
+    public void SetEmailBody(String Body) {
         m_Body = Body;
     }
 }

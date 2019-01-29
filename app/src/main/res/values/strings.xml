@@ -19,4 +19,9 @@
     <string name="player_name_text">Player Name</string>
     <string name="minus_text">-</string>
     <string name="four_text">4</string>
+    <string name="point_quota">Point Quota</string>
+    <string name="contact_us">Contact Us</string>
+    <string name="players">Players</string>
+    <string name="email_address">Email Address</string>
+    <string name="about">About</string>
 </resources>

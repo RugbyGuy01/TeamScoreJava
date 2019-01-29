@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/action_point_quota"
         android:orderInCategory="10"
-        android:title="Point Quota" />
+        android:title="@string/point_quota" />
 
     <item
         android:id="@+id/action_contact"
         android:orderInCategory="10"
-        android:title="Contact Us" />
+        android:title="@string/contact_us" />
 
     <item
         android:id="@+id/action_players"
         android:orderInCategory="10"
-        android:title="Players" />
+        android:title="@string/players" />
+
+    <item
+        android:id="@+id/action_email"
+        android:orderInCategory="10"
+        android:title="@string/email_address" />
 
     <item
         android:id="@+id/action_about"
         android:orderInCategory="10"
-        android:title="About" />
+        android:title="@string/about" />
 
 </menu>

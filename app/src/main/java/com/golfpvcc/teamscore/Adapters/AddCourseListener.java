@@ -6,5 +6,6 @@ package com.golfpvcc.teamscore.Adapters;
 public interface AddCourseListener {
 
     void AddNewCourse();
-    void EditCourse( int position);
+
+    void EditCourse(int position);
 }

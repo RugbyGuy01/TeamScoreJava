@@ -15,12 +15,14 @@ import android.widget.Toast;
 
 import com.golfpvcc.teamscore.Database.PlayerRecord;
 import com.golfpvcc.teamscore.Database.RealmScoreCardAccess;
+import com.golfpvcc.teamscore.Extras.DialogEmailAddress;
 import com.golfpvcc.teamscore.Extras.EmailScores;
 import com.golfpvcc.teamscore.Player.DisplayPlayerScoreData;
 
 import io.realm.Realm;
 
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.COURSE_NAME;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.EMAIL_ADDRESS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.FIRST_HOLE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.HOLES_18;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.NEXT_SCREEN;
@@ -54,7 +56,7 @@ import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM_END;
 The screen Orientation is set in the apps manifest
 android:screenOrientation="landscape"
  */
-public class MainSummaryActivity  extends AppCompatActivity {
+public class MainSummaryActivity extends AppCompatActivity implements DialogEmailAddress.EmailDialogListener {
     Realm m_Realm;
     RealmScoreCardAccess m_RealmScoreCardAccess;
     int[] m_PointQuota;                 // holds the point quota value for eagles, birdies, pars, boggy, double, others
@@ -63,6 +65,7 @@ public class MainSummaryActivity  extends AppCompatActivity {
     TableLayout m_PlayerTableLayoutCreate;       // Player score card table
     TableLayout m_TeamTableLayoutCreate;       // Team score card table
     DisplayPlayerScoreData[] m_PlayerScreenData;
+    DisplayPlayerScoreData m_EmailPlayerScreenData;       // player score that will be emailed
     String SelectedCourse = "";
 
     @Override
@@ -135,7 +138,7 @@ This function will branch to the next screen using the result for the current sc
                 break;
 
             case SCREEN_COURSE_LIST:
-               newIntent = new Intent(this, CourseList.class);    // list the courses to select
+                newIntent = new Intent(this, CourseList.class);    // list the courses to select
                 break;
 
             case SCREEN_COURSE_SELECTED:
@@ -146,7 +149,7 @@ This function will branch to the next screen using the result for the current sc
 
             case SCREEN_PLAYERS_SETUP:  // just selected the course from the course list menu
                 SelectedCourse = data.getStringExtra(COURSE_NAME);
-               newIntent = new Intent(this, PlayerSetup.class);    // list the courses to select
+                newIntent = new Intent(this, PlayerSetup.class);    // list the courses to select
                 newIntent.putExtra(COURSE_NAME, SelectedCourse);
                 break;
 
@@ -211,6 +214,7 @@ This function will branch to the next screen using the result for the current sc
         DisplayTeamOverUnderSummary(NumberOfPlayers, Row++);
         DisplayTeamTotalStokeSummary(NumberOfPlayers, Row);
     }
+
     /*
 This function will calculate the team point quota team scores
  */
@@ -266,7 +270,6 @@ This function will calculate the team strokes over/under using the player's stro
     }
 
 
-
     /*
     This function will init the Player's hold class - the class has access to the player's database record and keeps track of the player's total and team score.
      */
@@ -287,35 +290,35 @@ This function will calculate the team strokes over/under using the player's stro
                 MyPlayer = m_RealmScoreCardAccess.GetPlayerFromScoreCard(Inx);  // find all of the current player database records on the score card
                 m_PlayerScreenData[Inx] = new DisplayPlayerScoreData(this, PointQuota, MyPlayer);
                 m_PlayerScreenData[Inx].CalculatePlayerScoreSummary(CoursePar, CourseHandicap);
-                AddTextViewListerner( Inx, Row); // use for emailing score to user
+                AddTextViewListerner(Inx, Row); // use for emailing score to user
             }
         }
     }
+
     /*
-       This function will add text view of the player's name on the score card, used to email player.
-        */
-    private void AddTextViewListerner( int Inx, int Row) {
+           This function will add text view of the player's name on the score card, used to email player.
+            */
+    private void AddTextViewListerner(int Inx, int Row) {
         TextView tv_PlayerName;
 
         tv_PlayerName = m_PlayerScoreSummaryTable[Row][0];      // text view from screen
         tv_PlayerName.setOnClickListener(tvEmailScoring);
         String strTmp = "summary_player_tv_" + Inx;                            // net team score for the hole
 
-        int tv_Id = getResources().getIdentifier(strTmp,"id", getPackageName());
+        int tv_Id = getResources().getIdentifier(strTmp, "id", getPackageName());
 
         tv_PlayerName.setId(tv_Id);      // id used in the email function
 
         m_PlayerScreenData[Inx].setTvPlayerLowerCurScore(tv_PlayerName);
     }
+
     /*
 
      */
     private View.OnClickListener tvEmailScoring = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            DisplayPlayerScoreData tmpPlayerScreenData = null;
             int textId = view.getId(), Inx = -1;
-            EmailScores MyEmail;
 
             switch (textId) {
                 case R.id.summary_player_tv_0:
@@ -331,20 +334,73 @@ This function will calculate the team strokes over/under using the player's stro
                     Inx = 3;
                     break;
             }
-            if( -1 < Inx ) {
-                tmpPlayerScreenData = m_PlayerScreenData[Inx];
-                String Subject = "Player's Score: ";
-                Subject += tmpPlayerScreenData.getPlayerName();
-                Subject += "  - " + m_RealmScoreCardAccess.getTodayGolfCoursename();        // get the current score for today's game
-                String Body = tmpPlayerScreenData.getSpreadSheetScore();
-
-                MyEmail = new EmailScores(view.getContext());
-                MyEmail.SetEmailSubject(Subject);
-                MyEmail.SetEmailBody(Body);
-                MyEmail.ToPostOffice();
+            if (-1 < Inx) {
+                m_EmailPlayerScreenData = m_PlayerScreenData[Inx];
+                m_EmailPlayerScreenData.getTvPlayerLowerCurScore().setTextColor(getResources().getColor(R.color.one_under_color));
+                GetEmailAddressFromSystem();
             }
         }
     };
+
+    /*
+    This function will use the phone's email app to email the player's score.
+     */
+    public void SendEmailToUser(DisplayPlayerScoreData tmpPlayerScreenData, String EmailTo) {
+        EmailScores MyEmailApp;
+
+        String Subject = "Player's Score: ";
+        Subject += tmpPlayerScreenData.getPlayerName();
+        Subject += "  - " + m_RealmScoreCardAccess.getTodayGolfCoursename();        // get the current score for today's game
+        String Body = tmpPlayerScreenData.getSpreadSheetScore();
+
+
+        MyEmailApp = new EmailScores(this);
+        MyEmailApp.SetEmailAddress(EmailTo);
+        MyEmailApp.SetEmailSubject(Subject);
+        MyEmailApp.SetEmailBody(Body);
+        MyEmailApp.ToPostOffice();
+    }
+
+    /*
+    This function will get the stored email address in the phone.
+     */
+    private String GetEmailAddressFromSystem() {
+        String EmailAddress = "VGamble";
+
+        final SharedPreferences pref = getSharedPreferences(EMAIL_ADDRESS, MODE_PRIVATE);
+        EmailAddress = pref.getString(EMAIL_ADDRESS, "V");
+        if (false == isEmailValid(EmailAddress)) {
+            DialogEmailAddress EmailDialog = new DialogEmailAddress();
+
+            EmailDialog.show(getSupportFragmentManager(), "Configure Email");
+        } else {
+            SendEmailToUser(m_EmailPlayerScreenData, EmailAddress);
+        }
+        return EmailAddress;
+    }
+
+    /*
+    The email address send by the DialogEmailAddress class interface
+     */
+    @Override
+    public void SendEmailAddress(String EmailAddressForUser) {
+        final SharedPreferences pref = getSharedPreferences(EMAIL_ADDRESS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();          // get the editor for the databse
+        editor.putString(EMAIL_ADDRESS, EmailAddressForUser);   // save the new email address
+        editor.apply();
+
+        SendEmailToUser(m_EmailPlayerScreenData, EmailAddressForUser);
+    }
+
+    /*
+    This function validates the email address
+    */
+    boolean isEmailValid(CharSequence email) {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+
+
     /*
   This function will load the Point Quote values into the point quato array - the user can set the values for the course select menu (upper right ...)
   */

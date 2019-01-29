@@ -87,6 +87,7 @@ public class CourseListRecyclerView extends RecyclerView {
     public CourseListRecyclerView(Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
+
     /*
     This is making a custom adapter for the golf app.
      */

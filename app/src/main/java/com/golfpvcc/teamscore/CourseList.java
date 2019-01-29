@@ -24,13 +24,16 @@ import com.golfpvcc.teamscore.Adapters.Divider;
 import com.golfpvcc.teamscore.Adapters.SimpleTouchCallback;
 import com.golfpvcc.teamscore.Database.CourseListRecord;
 import com.golfpvcc.teamscore.Database.RealmScoreCardAccess;
+import com.golfpvcc.teamscore.Extras.DialogEmailAddress;
 
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.COURSE_NAME;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.EMAIL_ADDRESS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.NEXT_SCREEN;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.POINT_QUOTA_DB;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_BIRDIE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_BOGGEY;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_DOUBLE;
@@ -40,7 +43,7 @@ import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_PAR;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_TARGET;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.SCREEN_PLAYERS_SETUP;
 
-public class CourseList extends AppCompatActivity {
+public class CourseList extends AppCompatActivity implements DialogEmailAddress.EmailDialogListener {
     private static final String TAG = "Vin";
     Button mBtnAddCourse;
     Toolbar mToolBar;
@@ -169,27 +172,45 @@ public class CourseList extends AppCompatActivity {
     }
 
     /*
-    This function is called when the user selects a menu tool bar option
+    This function is called when the user enters a new email address, save the address.
      */
+    @Override
+    public void SendEmailAddress(String EmailAddressForUser) {
+        final SharedPreferences pref = getSharedPreferences(EMAIL_ADDRESS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();          // get the editor for the databse
+        editor.putString(EMAIL_ADDRESS, EmailAddressForUser);   // save the new email address
+        editor.apply();
+    }
+
+    /*
+        This function is called when the user selects a menu tool bar option
+         */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         boolean handled = true; //indicated we handled the menu selection
         int id = item.getItemId();      // the item that was selected.
+        DialogEmailAddress DisplayGetEmailDialog;
+
         switch (id) {
             case R.id.action_point_quota:
                 DialogPointQuota();
                 break;
 
             case R.id.action_about:
-                Toast.makeText(CourseList.this, "Rev 1.1", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CourseList.this, "Rev 3.0", Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.action_contact:
-                Toast.makeText(CourseList.this, "Vinnie Gamble", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CourseList.this, "Vinnie Gamble \n VGamble@golfpvcc.com", Toast.LENGTH_LONG).show();
                 break;
 
             case R.id.action_players:
                 UpdatedPlayersHandicapMenuSelection();
+                break;
+
+            case R.id.action_email: // display the dialog for getting the user email address
+                DialogEmailAddress EmailDialog = new DialogEmailAddress();
+                EmailDialog.show(getSupportFragmentManager(), "Configure Email");
                 break;
 
             default:
@@ -215,8 +236,7 @@ public class CourseList extends AppCompatActivity {
             intentSendDataBack.putExtra(NEXT_SCREEN, SCREEN_PLAYERS_SETUP);
             setResult(RESULT_OK, intentSendDataBack);
             finish();       // close this screen or exit this screen
-        }
-        else {
+        } else {
             Toast.makeText(this, "Player update failed, golf course has been deleted! ", Toast.LENGTH_LONG).show();
         }
     }
@@ -227,7 +247,7 @@ public class CourseList extends AppCompatActivity {
 
     private void DialogPointQuota() {
         final Dialog MenuDialog = new Dialog(CourseList.this);
-        final SharedPreferences pref = getSharedPreferences("PointQuota", MODE_PRIVATE);
+        final SharedPreferences pref = getSharedPreferences(POINT_QUOTA_DB, MODE_PRIVATE);
 
         MenuDialog.setTitle("Setup Point Quota");
         MenuDialog.setContentView(R.layout.dialog_pt_quota);
@@ -255,7 +275,7 @@ public class CourseList extends AppCompatActivity {
         butQuotaSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View ButtonView) {
-                SharedPreferences.Editor editor = pref.edit();          // get the editor for the databse
+                SharedPreferences.Editor editor = pref.edit();          // get the editor for the database
                 SavePointQuoteData(editor, QUOTA_EAGLE, etEagleValue.getText().toString());
                 SavePointQuoteData(editor, QUOTA_BIRDIE, etBirdieValue.getText().toString());
                 SavePointQuoteData(editor, QUOTA_PAR, etParValue.getText().toString());
@@ -268,12 +288,13 @@ public class CourseList extends AppCompatActivity {
                 Toast.makeText(CourseList.this, "Point Quota values saved.", Toast.LENGTH_SHORT).show();
                 MenuDialog.cancel();
             }
+
             /*
 This function will validate the data entred by the user is validate - a blank line will set the string to null which cause a app crash
  */
             private void SavePointQuoteData(SharedPreferences.Editor Editor, String KeyStr, String Value) {
 
-                if( Value.length() < 1){
+                if (Value.length() < 1) {
                     Value = "0";
                 }
                 Editor.putString(KeyStr, Value);
@@ -301,6 +322,7 @@ This function will validate the data entred by the user is validate - a blank li
         len = Value_str.length();
         EditTextValue.setSelection(len);       // set the cursor at the end of the field
     }
+
 
     @Override
     protected void onStart() {
