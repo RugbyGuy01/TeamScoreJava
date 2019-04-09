@@ -11,9 +11,11 @@ import com.golfpvcc.teamscore.R;
 import com.golfpvcc.teamscore.Team.TeamScoreTotals;
 
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.BACK_NINE_TOTAL_DISPLAYED;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_9_GAME;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_GROSS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_NET;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_POINT_QUOTA;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_STABLEFORD;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.FRONT_NINE_TOTAL_DISPLAYED;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.HOLES_18;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.NAME_COL;
@@ -229,6 +231,14 @@ The text views for the team and user scores are below the player's name on the s
 
             case DISPLAY_MODE_POINT_QUOTA:
                 DisplayModeText = "Point Quota";
+                break;
+
+            case DISPLAY_MODE_STABLEFORD:
+                DisplayModeText = "Stableford";
+                break;
+
+            case DISPLAY_MODE_9_GAME:
+                DisplayModeText = "Base Ball";
                 break;
         }
 

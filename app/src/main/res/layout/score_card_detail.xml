@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
 
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
@@ -77,8 +78,7 @@
 
             <TableRow
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:weightSum="3">
+                android:layout_height="match_parent">
 
                 <Button
                     android:id="@+id/butNextNine"
@@ -93,6 +93,13 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/net_score_text" />
+
+                <Button
+                    android:id="@+id/butNineGame"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="9 Game" />
 
                 <Button
                     android:id="@+id/butGameSummary"

@@ -18,6 +18,7 @@ import com.golfpvcc.teamscore.Database.RealmScoreCardAccess;
 import com.golfpvcc.teamscore.Extras.DialogEmailAddress;
 import com.golfpvcc.teamscore.Extras.EmailScores;
 import com.golfpvcc.teamscore.Player.DisplayPlayerScoreData;
+import com.golfpvcc.teamscore.Player.NineGame;
 
 import io.realm.Realm;
 
@@ -27,7 +28,9 @@ import static com.golfpvcc.teamscore.Extras.ConstantsBase.FIRST_HOLE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.HOLES_18;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.NEXT_SCREEN;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.NINETH_HOLE;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.NINE_PLAYERS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PLAYER_TOTAL;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_ALBATROSS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_BIRDEIS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_BOGGY;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_DOUBLE;
@@ -36,6 +39,7 @@ import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_END;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_OTHER;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_PAR;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_TARGET;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_ALBATROSS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_BIRDIE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_BOGGEY;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_DOUBLE;
@@ -185,7 +189,7 @@ This function will branch to the next screen using the result for the current sc
 
     /*
     The player summary will used the DisplayPlayerHoleData which contains all of the player's information
-    This function will display the player's golf summary - "Score", "Quota", "Eagle", "Birdies", " Pars", "Bog", "Dbl", "Othr"
+    This function will display the player's golf summary - "Score", "Quota", "Stfd", "Eagle", "Bird", " Pars", "Bog", "Dbl", "Othr", "Pts"
      */
     private void DisplayPlayersSummary(int NumberOfPlayers) {
         String PlayerName;
@@ -277,6 +281,7 @@ This function will calculate the team strokes over/under using the player's stro
         PlayerRecord MyPlayer;
         int Inx, CurrentHole, Row = 1;
         int[] CoursePar, CourseHandicap;
+        NineGame m_Player_9_Game;
 
         CoursePar = new int[HOLES_18];
         CourseHandicap = new int[HOLES_18];
@@ -285,11 +290,35 @@ This function will calculate the team strokes over/under using the player's stro
             CourseHandicap[CurrentHole] = m_RealmScoreCardAccess.GetGolfCourseHoleHandicapInt(CurrentHole);               // Save the course hole handicap
         }
 
-        for (Inx = 0, Row = 1; Inx < NumberOfPlayers; Inx++, Row++) {
-            if (m_PlayerScreenData[Inx] == null) {
+        for (Inx = 0; Inx < NumberOfPlayers; Inx++) {
+            if (m_PlayerScreenData[Inx] == null) {          // load the all of the player scores into the app classes - need to calculate the 9 game points
                 MyPlayer = m_RealmScoreCardAccess.GetPlayerFromScoreCard(Inx);  // find all of the current player database records on the score card
-                m_PlayerScreenData[Inx] = new DisplayPlayerScoreData(this, PointQuota, MyPlayer);
-                m_PlayerScreenData[Inx].CalculatePlayerScoreSummary(CoursePar, CourseHandicap);
+                m_PlayerScreenData[Inx] = new DisplayPlayerScoreData(this, PointQuota, MyPlayer, CoursePar, CourseHandicap);
+            }
+        }
+        if (NumberOfPlayers == NINE_PLAYERS) {  //This function initialize the player's 9 game scores. We need to check all player's score to determine a player's 9 game points.
+            int PlayerGrossScore, Game_9_Score;
+            m_Player_9_Game = new NineGame();
+
+            for (CurrentHole = 0; CurrentHole < HOLES_18; CurrentHole++) {
+                m_Player_9_Game.ClearTotals();                  // clear the 9 game class totals
+                for (Inx = 0; Inx < NumberOfPlayers; Inx++) {
+                    PlayerGrossScore = m_PlayerScreenData[Inx].GetplayerNetScore(CurrentHole);  // get the player's gross score add it to thePlayer's 9 game class
+                    m_Player_9_Game.AddPlayerGrossScore(Inx, (byte) PlayerGrossScore);
+                }
+
+                m_Player_9_Game.sort_9_Scores();    // Now calculate the player 9 game points for this hole
+                for (Inx = 0; Inx < NINE_PLAYERS; Inx++) {
+                    Game_9_Score = m_Player_9_Game.Get_9_GameScore(Inx);
+                    m_PlayerScreenData[Inx].Assign_9_GameScore(CurrentHole, Game_9_Score);    // save the player's points for the 9 game
+                }
+            }
+        }
+
+
+        for (Inx = 0, Row = 1; Inx < NumberOfPlayers; Inx++, Row++) {
+            if (m_PlayerScreenData[Inx] != null) {
+                m_PlayerScreenData[Inx].CalculatePlayerScoreSummary(CoursePar, CourseHandicap);     // this loads the player score into the hole classes
                 AddTextViewListerner(Inx, Row); // use for emailing score to user
             }
         }
@@ -400,7 +429,6 @@ This function will calculate the team strokes over/under using the player's stro
     }
 
 
-
     /*
   This function will load the Point Quote values into the point quato array - the user can set the values for the course select menu (upper right ...)
   */
@@ -413,7 +441,10 @@ This function will calculate the team strokes over/under using the player's stro
 
             Value_str = pref.getString(QUOTA_TARGET, "36");
             PointQuota[PQ_TARGET] = Integer.parseInt(Value_str);
-            Value_str = pref.getString(QUOTA_EAGLE, "8");
+
+            Value_str = pref.getString(QUOTA_ALBATROSS, "8");
+            PointQuota[PQ_ALBATROSS] = Integer.parseInt(Value_str);
+            Value_str = pref.getString(QUOTA_EAGLE, "6");
             PointQuota[PQ_EAGLE] = Integer.parseInt(Value_str);
             Value_str = pref.getString(QUOTA_BIRDIE, "4");
             PointQuota[PQ_BIRDEIS] = Integer.parseInt(Value_str);
@@ -507,7 +538,7 @@ This function will calculate the team strokes over/under using the player's stro
     This function will build the summary table for the player's scores
      */
     private void BuildSummaryTable(int NumberOfPlayers) {
-        String[] PlayerColumnText = {"Player", "Score", "Quota", "Eagle", "Birdies", "Pars", "Bog", "Dbl", "Othr"};
+        String[] PlayerColumnText = {"Player", "Score", "Quota", "Sbfd", "Eagle", "Bird", "Pars", "Bog", "Dbl", "Othr", "Pts"};
         String[] PlayerRowText = {"", "Player 1", "Player 2", "Player 3", "Player 4"};
         String[] TeamColumnText = {"Team", "Front", "Back", "Total"};
         String[] TeamRowText = {"", "Pt. Quota", "Over/Under", "Score"};

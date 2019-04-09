@@ -34,6 +34,7 @@ import static com.golfpvcc.teamscore.Extras.ConstantsBase.COURSE_NAME;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.EMAIL_ADDRESS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.NEXT_SCREEN;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.POINT_QUOTA_DB;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_ALBATROSS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_BIRDIE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_BOGGEY;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_DOUBLE;
@@ -253,6 +254,8 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
         MenuDialog.setContentView(R.layout.dialog_pt_quota);
         MenuDialog.show();
         final EditText etTargetValue = (EditText) MenuDialog.findViewById(R.id.etQuotaTarget);
+        // Albatross
+        final EditText etAlbatrossValue = (EditText) MenuDialog.findViewById(R.id.etAlbatross);
         final EditText etEagleValue = (EditText) MenuDialog.findViewById(R.id.etEagle);
         final EditText etBirdieValue = (EditText) MenuDialog.findViewById(R.id.etBirdie);
         final EditText etParValue = (EditText) MenuDialog.findViewById(R.id.etPar);
@@ -261,7 +264,8 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
         final EditText etOtherValue = (EditText) MenuDialog.findViewById(R.id.etOther);
 
         PointQuotaLoadValues(pref, etTargetValue, QUOTA_TARGET, "36");     // load the dialog window with save shared preference values
-        PointQuotaLoadValues(pref, etEagleValue, QUOTA_EAGLE, "8");
+        PointQuotaLoadValues(pref, etEagleValue, QUOTA_ALBATROSS, "8");
+        PointQuotaLoadValues(pref, etEagleValue, QUOTA_EAGLE, "6");
         PointQuotaLoadValues(pref, etBirdieValue, QUOTA_BIRDIE, "4");
         PointQuotaLoadValues(pref, etParValue, QUOTA_PAR, "2");
         PointQuotaLoadValues(pref, etBoggeyValue, QUOTA_BOGGEY, "1");
@@ -276,6 +280,7 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
             @Override
             public void onClick(View ButtonView) {
                 SharedPreferences.Editor editor = pref.edit();          // get the editor for the database
+                SavePointQuoteData(editor, QUOTA_ALBATROSS, etAlbatrossValue.getText().toString());
                 SavePointQuoteData(editor, QUOTA_EAGLE, etEagleValue.getText().toString());
                 SavePointQuoteData(editor, QUOTA_BIRDIE, etBirdieValue.getText().toString());
                 SavePointQuoteData(editor, QUOTA_PAR, etParValue.getText().toString());
@@ -327,15 +332,17 @@ This function will validate the data entred by the user is validate - a blank li
     @Override
     protected void onStart() {
         super.onStart();
-        if (CourseRecordChangeListener != null)
+        if (CourseRecordChangeListener != null) {
             mCourseListResults.addChangeListener(CourseRecordChangeListener);
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (CourseRecordChangeListener != null)
+        if (CourseRecordChangeListener != null) {
             mCourseListResults.removeChangeListener(CourseRecordChangeListener);
+        }
         if (m_Realm != null) {
             m_Realm.close();      // close the database
             m_Realm = null;

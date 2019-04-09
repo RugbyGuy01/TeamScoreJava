@@ -32,13 +32,39 @@
             android:text="36" />
 
         <TextView
-            android:id="@+id/tvEagle"
+            android:id="@+id/tvAlbatross"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_below="@id/tvQuotaTarget"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="30dp"
+            android:text="Albatross: "
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/etAlbatross"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/tvAlbatross"
+            android:layout_toEndOf="@id/tvAlbatross"
+            android:digits="0123456789"
+            android:ems="1"
+            android:imeOptions="actionNext"
+            android:inputType="numberDecimal"
+            android:maxEms="1"
+            android:maxLength="1"
+            android:maxLines="1"
+            android:text="8" />
+
+        <TextView
+            android:id="@+id/tvEagle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/tvAlbatross"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"
             android:text="Eagles: "
             android:textSize="20sp" />
 

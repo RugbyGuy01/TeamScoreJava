@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.golfpvcc.teamscore.Database.PlayerRecord;
 import com.golfpvcc.teamscore.Database.RealmScoreCardAccess;
 import com.golfpvcc.teamscore.Player.DisplayPlayerScoreData;
+import com.golfpvcc.teamscore.Player.NineGame;
 import com.golfpvcc.teamscore.Player.ScoreCardDisplay;
 import com.golfpvcc.teamscore.Team.TeamScoreTotals;
 
@@ -25,9 +26,11 @@ import io.realm.Realm;
 
 import static android.widget.Toast.LENGTH_SHORT;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.BACK_NINE_TOTAL_DISPLAYED;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_9_GAME;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_GROSS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_NET;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_POINT_QUOTA;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_STABLEFORD;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.FIRST_HOLE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.FRONT_NINE_TOTAL_DISPLAYED;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.HANDICAP_ROW;
@@ -36,9 +39,11 @@ import static com.golfpvcc.teamscore.Extras.ConstantsBase.HOLE_ROW;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.NEXT_SCREEN;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.NINETH_HOLE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.NINETH_HOLE_ZB;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.NINE_PLAYERS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PAR_ROW;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PLAYER1_ROW;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PLAYER_TOTAL;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_ALBATROSS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_BIRDEIS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_BOGGY;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_DOUBLE;
@@ -47,6 +52,7 @@ import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_END;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_OTHER;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_PAR;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_TARGET;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_ALBATROSS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_BIRDIE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_BOGGEY;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.QUOTA_DOUBLE;
@@ -65,6 +71,7 @@ public class DisplayScoreCardDetail extends AppCompatActivity {
     DisplayScoreCardDetail.WhatNineIsDisplayed m_WhatNineIsBeingDisplayed;    // must keep track of which screen is being display to the user
     TeamScoreTotals m_TeamScoreTotals;
     TableLayout m_TableLayoutCreate;       // score card table
+    NineGame m_Player_9_Game;
     int m_DisplayMode = DISPLAY_MODE_GROSS;
     int m_CurrentHole, m_NumberOfPlayers;            // the number of players on the sacore card
     int m_ColumnCnt = 11;                   // 9 holes, Name, total
@@ -87,6 +94,7 @@ public class DisplayScoreCardDetail extends AppCompatActivity {
 
         // build player's classes if no player exit screen
         if (0 < m_NumberOfPlayers && 3 < GolfCourseName.length()) {
+
             m_RowCount += m_NumberOfPlayers;
             m_CurrentHole = m_RealmScoreCardAccess.getCurrentGolfHoleBeingPlayed();         // get the hole the app was on when the app exit
 
@@ -122,6 +130,10 @@ public class DisplayScoreCardDetail extends AppCompatActivity {
             AddNamesToScoreCard(m_NumberOfPlayers);                          // add the names to the lower part of screen score card
             AddButtonListerner();
 
+            if (m_NumberOfPlayers == NINE_PLAYERS) {
+                InitPlayer_9_GamePoints(m_NumberOfPlayers);
+            }
+
             m_TeamScoreTotals = new TeamScoreTotals();      // wholes the team total score
             m_ScoreCardDisplay.TeamScoringSetup(m_DisplayPlayerScore, m_NumberOfPlayers);
 
@@ -133,6 +145,28 @@ public class DisplayScoreCardDetail extends AppCompatActivity {
             setResult(RESULT_OK, intentSendDataBack);
 
             finish();       // close this screen or exit this screen
+        }
+    }
+
+    /*
+    This function initialize the player's 9 game scores. We need to check all player's score to determine a player's 9 game score.
+     */
+    private void InitPlayer_9_GamePoints(int numberOfPlayers) {
+        int Inx, CurrentHole, PlayerGrossScore, Game_9_Score;
+
+        for (CurrentHole = 0; CurrentHole < HOLES_18; CurrentHole++) {
+            m_Player_9_Game.ClearTotals();                  // clear the 9 game class totals
+            for (Inx = 0; Inx < numberOfPlayers; Inx++) {
+                PlayerGrossScore = m_DisplayPlayerScore[Inx].GetplayerNetScore(CurrentHole);  // get the player's gross score add it to thePlayer's 9 game class
+                if (0 < PlayerGrossScore)           // make sure they played the hole
+                    m_Player_9_Game.AddPlayerGrossScore(Inx, (byte) PlayerGrossScore);
+            }
+
+            m_Player_9_Game.sort_9_Scores();    // Now calculate the player 9 game score for this hole
+            for (Inx = 0; Inx < NINE_PLAYERS; Inx++) {
+                Game_9_Score = m_Player_9_Game.Get_9_GameScore(Inx);
+                m_DisplayPlayerScore[Inx].Assign_9_GameScore(CurrentHole, Game_9_Score);    // save the player's points for the 9 game
+            }
         }
     }
 
@@ -205,10 +239,17 @@ This function will populate the data entry of the score card lower screen, Playe
 
     private void InitPlayersScreenRecord(int NumberOfPlayers) {
         String strTmp;
-        int tv_Id, Inx, CourseHandicapForHole, CourseParForHole;
+        int tv_Id, Inx, CourseHandicapForHole;
         TextView tv_Tmp;
-
+        Button NineGameBut;
         Resources res = getResources();
+
+        NineGameBut = findViewById(R.id.butNineGame);       // you can only play the None Game with 3 players.
+        if (NumberOfPlayers == NINE_PLAYERS) {
+            NineGameBut.setVisibility(Button.VISIBLE);
+            m_Player_9_Game = new NineGame();
+        } else
+            NineGameBut.setVisibility(Button.GONE);
 
         for (Inx = 0; Inx < NumberOfPlayers; Inx++) {
 
@@ -270,6 +311,8 @@ This function will populate the data entry of the score card lower screen, Playe
         butAddLister = (Button) findViewById(R.id.butGameSummary);      // game over will exit the screen back to the main screen
         butAddLister.setOnClickListener(butNavigate);
 
+        butAddLister = (Button) findViewById(R.id.butNineGame);      // game over will exit the screen back to the main screen
+        butAddLister.setOnClickListener(butLocalGame);
 
         butAddLister = findViewById(R.id.Player_minus_0);      // Player 1 minus a stroke on the lower score card
         butAddLister.setOnClickListener(butPlayersScore);
@@ -383,6 +426,7 @@ This function will populate the data entry of the score card lower screen, Playe
         }
     };
 
+
     /*
     This function will handle displaying the front or back on the score card
      */
@@ -483,7 +527,6 @@ This function will populate the data entry of the score card lower screen, Playe
                     m_WhatNineIsBeingDisplayed = DisplayScoreCardDetail.WhatNineIsDisplayed.BACK_NINE_DISPLAY;
                     RedisplayScoreCardFrontOrBackNine(m_WhatNineIsBeingDisplayed, m_NumberOfPlayers, m_DisplayMode);          // redisplay the back nine score
                 }
-
         }
     }
 
@@ -521,15 +564,30 @@ This function will populate the data entry of the score card lower screen, Playe
     This function will save the player's score to the database - team mask is set when the user selects which score will be a team score
      */
     public void NextSavePlayerScore(int CurrentHole, int DisplayMode) {
-        int Inx, NextHole;
+        int Inx, NextHole, Game_9_Score, PlayerNetScore;
 
         m_TeamScoreTotals.ClearHole(CurrentHole);       // make sure the team score for this is set to zero
+        m_Player_9_Game.ClearTotals();                  // clear the hole totals for the 9 game
+
         for (Inx = 0; Inx < m_NumberOfPlayers; Inx++) {
             m_DisplayPlayerScore[Inx].SavePlayerHoleScoreToDatabase(m_RealmScoreCardAccess, CurrentHole); // record are zero based 0 to 8
             m_DisplayPlayerScore[Inx].MoveScoreToScoreCard(CurrentHole, DisplayMode, m_WhatNineIsBeingDisplayed);
 
+            PlayerNetScore = m_DisplayPlayerScore[Inx].GetplayerNetScore(CurrentHole);
+            if (m_NumberOfPlayers == NINE_PLAYERS)
+                m_Player_9_Game.AddPlayerGrossScore(Inx, (byte) PlayerNetScore);
+
             m_DisplayPlayerScore[Inx].MovePlayerTeamScoreToTeamScoreTotal(CurrentHole, m_TeamScoreTotals, DisplayMode);  // Save the player's team score to the master team class
         }
+
+        if (m_NumberOfPlayers == NINE_PLAYERS) {
+            m_Player_9_Game.sort_9_Scores();    // we calculate the player 9 game points
+            for (Inx = 0; Inx < NINE_PLAYERS; Inx++) {
+                Game_9_Score = m_Player_9_Game.Get_9_GameScore(Inx);
+                m_DisplayPlayerScore[Inx].Assign_9_GameScore(CurrentHole, Game_9_Score);
+            }
+        }
+
         m_ScoreCardDisplay.DisplayTeamScoresOnScoreCard(m_TeamScoreTotals, m_WhatNineIsBeingDisplayed);
 
         NextHole = m_ScoreCardDisplay.NextHoleOnScoreCard(CurrentHole);     // the current hole display is Zero based
@@ -548,6 +606,7 @@ This function will populate the data entry of the score card lower screen, Playe
         }
 
     }
+
     /*
     This function will handle the user pressing the prev button - the nine hole indicates the user is on the front nine of the score card
      */
@@ -601,14 +660,20 @@ This function will populate the data entry of the score card lower screen, Playe
             switch (m_DisplayMode) {
                 case DISPLAY_MODE_GROSS:
                     m_DisplayMode = DISPLAY_MODE_NET;       // display net score - button display's Point Quota
-                    ButDisplayModeText = "Point Quota";
+                    ButDisplayModeText = "Stableford";
                     break;
 
                 case DISPLAY_MODE_NET:
+                    m_DisplayMode = DISPLAY_MODE_STABLEFORD;   // display PQ. score - button display's Gross Score
+                    ButDisplayModeText = "Point Quota";
+                    break;
+
+                case DISPLAY_MODE_STABLEFORD:
                     m_DisplayMode = DISPLAY_MODE_POINT_QUOTA;   // display PQ. score - button display's Gross Score
                     ButDisplayModeText = "Gross Score";
                     break;
 
+                case DISPLAY_MODE_9_GAME:               // default back to gross score mode
                 case DISPLAY_MODE_POINT_QUOTA:
                     m_DisplayMode = DISPLAY_MODE_GROSS;
                     ButDisplayModeText = "Net Score";
@@ -623,7 +688,34 @@ This function will populate the data entry of the score card lower screen, Playe
 
         }
     };
+    /*
+    This function handles the local games button on the main score card screen - Currently only the 9 game will use this function until other games are add for foursome only
+     */
+    private View.OnClickListener butLocalGame = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            int ButtonId = view.getId();
+            String ButDisplayModeText = "Gross Score";  // going from local games back to team game - set team game button back to gross scoring
 
+            switch (ButtonId) {
+                case R.id.butNineGame:
+                    m_DisplayMode = DISPLAY_MODE_9_GAME;
+                    break;
+
+                default:
+                    Toast.makeText(DisplayScoreCardDetail.this, "butLocalGame not coded " + ButtonId, LENGTH_SHORT).show();
+                    break;
+            }
+            Button butDisplayMode = findViewById(R.id.butDisplayMode);
+            butDisplayMode.setText(ButDisplayModeText);        // set the text on the display mode button
+
+            m_ScoreCardDisplay.setScoreCardDisplayMode(m_DisplayMode);
+            RedisplayScoreCardFrontOrBackNine(m_WhatNineIsBeingDisplayed, m_NumberOfPlayers, m_DisplayMode);   //update the screen score card after we change the display mode
+
+            int currentHoleDisplay = m_ScoreCardDisplay.getTheCurrentHoleFromScoreCard();        // redisplay the current hole being played
+            m_ScoreCardDisplay.HighLightTheFirstHoleOnScoreCard((byte) currentHoleDisplay);
+        }
+    };
     /*
 This function will update the score card with the hole numbers, handicap and par for the front or back nine holes.
 The Set button text will be used to configure the button
@@ -641,7 +733,6 @@ The Set button text will be used to configure the button
         }
 
         m_ScoreCardDisplay.DisplayTeamScoresOnScoreCard(m_TeamScoreTotals, DisplayFrontOrBackScoreCard);            // display the team scores on the score card
-
     }
 
     /*
@@ -810,7 +901,10 @@ This function will handle the team score from the player's current score. The us
 
             Value_str = pref.getString(QUOTA_TARGET, "36");
             PointQuota[PQ_TARGET] = Integer.parseInt(Value_str);
-            Value_str = pref.getString(QUOTA_EAGLE, "8");
+
+            Value_str = pref.getString(QUOTA_ALBATROSS, "8");
+            PointQuota[PQ_ALBATROSS] = Integer.parseInt(Value_str);
+            Value_str = pref.getString(QUOTA_EAGLE, "6");
             PointQuota[PQ_EAGLE] = Integer.parseInt(Value_str);
             Value_str = pref.getString(QUOTA_BIRDIE, "4");
             PointQuota[PQ_BIRDEIS] = Integer.parseInt(Value_str);

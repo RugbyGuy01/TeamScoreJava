@@ -107,10 +107,11 @@ public class PlayerSetup extends AppCompatActivity {
                     for (int x = 0; x < CurrentTotalPlayer; x++) {
                         PlayerScores[x] = mRealmScoreCardAccess.GetPlayerFromScoreCard(x).getmByteScore();      // save the player scores
                     }
+                } else {
+                    mRealmScoreCardAccess.setCurrentGolfHoleBeingPlayed(0);     // start on hole one.
                 }
                 mRealmScoreCardAccess.DeleteAllPlayerName();                // remove all player and add the new ones
                 mRealmScoreCardAccess.setTodayGolfCoursename(mCourseName);  // Will use the course name to find the handicap and pars for todays game
-                mRealmScoreCardAccess.setCurrentGolfHoleBeingPlayed(0);     // start on hole one.
                 mRealmScoreCardAccess.setCurrentMachineState(DISPLAY_FRONT_NINE);
 
                 for (int x = 0; x < PLAYER_TOTAL; x++) {

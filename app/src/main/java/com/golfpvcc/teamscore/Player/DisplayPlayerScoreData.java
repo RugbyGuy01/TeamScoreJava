@@ -12,13 +12,16 @@ import com.golfpvcc.teamscore.R;
 import com.golfpvcc.teamscore.Team.TeamPlayerScoreData;
 import com.golfpvcc.teamscore.Team.TeamScoreTotals;
 
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_9_GAME;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_GROSS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_NET;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_POINT_QUOTA;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.DISPLAY_MODE_STABLEFORD;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.DOUBLE_TEAM_SCORE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.HOLES_18;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.JUST_RAW_SCORE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.NINETH_HOLE;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_ALBATROSS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_BIRDEIS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_BOGGY;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.PQ_DOUBLE;
@@ -33,8 +36,10 @@ import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM_EAGLE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM_END;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM_OTHER;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM_PAR;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM_PTS;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM_QUOTA;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM_SCORE;
+import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM_STABLEFORD;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.SUM__BOGGEY;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.TEAM_GROSS_SCORE;
 import static com.golfpvcc.teamscore.Extras.ConstantsBase.TEAM_NET_SCORE;
@@ -86,8 +91,9 @@ public class DisplayPlayerScoreData extends TeamPlayerScoreData {
     /*
     This function used by the Main Summary Activity to calculate play's scores.
      */
-    public DisplayPlayerScoreData(Context context, int[] PointQuota, PlayerRecord PlayerDatabaseRec) {
+    public DisplayPlayerScoreData(Context context, int[] PointQuota, PlayerRecord PlayerDatabaseRec, int[] CoursePar, int[] courseHandicap) {
 
+        int CourseHandicapForHole;
         m_Context = context;
         m_PointQuotaArray = PointQuota;
         m_PlayerDataBaseRecord = PlayerDatabaseRec;        // access into the database for this player name, scores and handicap
@@ -99,10 +105,20 @@ public class DisplayPlayerScoreData extends TeamPlayerScoreData {
         m_PlayerHandicap = m_PlayerDataBaseRecord.getM_Handicap();
         m_PoinQuotaTargetValue = m_PlayerHandicap - m_PointQuotaArray[PQ_TARGET];  // player's total score will start off with a negative number (Handicap - Target) i.e.  19 - 36 = -19.
 
-        m_SummaryStokeScore = new int[SUM_END]; // hold the player's golf summary - "Score", "Quota", "Eagle", "Birdies", " Pars", "Bog", "Dbl", "Othr"
+        m_SummaryStokeScore = new int[SUM_END]; // hold the player's golf summary - "Score", "Quota", "Eagle", "Birdies", " Pars", "Bog", "Dbl", "Othr", "Pts"
         for (int i = 0; i < SUM_END; i++) {
             m_SummaryStokeScore[i] = 0;         // clear array
         }
+
+        for (int Hole = 0; Hole < HOLES_18; Hole++) {
+            CourseHandicapForHole = courseHandicap[Hole];
+            setStrokeHoles(Hole, CourseHandicapForHole);      // the hole with a strokes
+            setTeamTheParForEachHole(Hole, (byte) CoursePar[Hole]); // used by team scoring
+        }
+
+        TeamClearHoleMask();          // set  variables to zero
+        LoadPlayerScoresIntoHoleClass();            // Load the player's scores from the database
+        LoadPlayerQuotaScores();                    // calculate quota scores
     }
 
     /*
@@ -125,7 +141,7 @@ public class DisplayPlayerScoreData extends TeamPlayerScoreData {
     This function will load the player's quota score into Holes Class on start up.
      */
     public void LoadPlayerQuotaScores() {
-        byte GrossScore, ParForHole, PointQuotaScore;
+        byte GrossScore, NetScore, ParForHole, PointQuotaScore;
 
         for (int Hole = 0; Hole < HOLES_18; Hole++) {
 
@@ -133,9 +149,14 @@ public class DisplayPlayerScoreData extends TeamPlayerScoreData {
             if (0 < GrossScore) {
                 ParForHole = GetTeamTheParForThisHole(Hole);
 
-                PointQuotaScore = (byte) (GrossScore - ParForHole);
+                PointQuotaScore = (byte) (GrossScore - ParForHole);     // point quote
                 PointQuotaScore = DeterminePointScoreQuotaScore(PointQuotaScore);
                 m_HoleDetails[Hole].setQuotaHoleScore(PointQuotaScore);
+
+                NetScore = (byte) m_HoleDetails[Hole].getNetScore();    // stable ford scoring, use the net score
+                PointQuotaScore = (byte) (NetScore - ParForHole);
+                PointQuotaScore = DeterminePointScoreQuotaScore(PointQuotaScore);
+                m_HoleDetails[Hole].setStablefordHoleScore(PointQuotaScore);
             }
         }
     }
@@ -251,10 +272,10 @@ This function will add the golfer name to the lower part of the score card.
     }
 
     /*
-    This function will save the player's current score into the database ??
+    This function will save the player's current score into the database
      */
     public void SavePlayerHoleScoreToDatabase(RealmScoreCardAccess realmScoreCardAccess, int CurrentHole) {
-        byte CurrentHoleScore, ParForHole, PointQuotaScore;
+        byte CurrentHoleScore, NetScore, ParForHole, PointQuotaScore;
 
         CurrentHoleScore = (byte) GetCurrentPlayerLowerScore();          // read the text view of the lower score entry and converts the string to an int
         m_HoleDetails[CurrentHole].setPlayerGrossScore(CurrentHoleScore);
@@ -264,6 +285,12 @@ This function will add the golfer name to the lower part of the score card.
         PointQuotaScore = (byte) (CurrentHoleScore - ParForHole);
         PointQuotaScore = DeterminePointScoreQuotaScore(PointQuotaScore);
         m_HoleDetails[CurrentHole].setQuotaHoleScore(PointQuotaScore);
+
+        // save the Stableford score
+        NetScore = (byte) m_HoleDetails[CurrentHole].getNetScore();
+        PointQuotaScore = (byte) (NetScore - ParForHole);
+        PointQuotaScore = DeterminePointScoreQuotaScore(PointQuotaScore);
+        m_HoleDetails[CurrentHole].setStablefordHoleScore(PointQuotaScore);
 
         CurrentHoleScore += m_HoleDetails[CurrentHole].getTeamHoleMask();
 
@@ -480,6 +507,11 @@ This function will add the golfer name to the lower part of the score card.
                 ScoreToSave = m_HoleDetails[currentHole].getQuotaHoleScore();
                 TeamSavePointTeamScore(currentHole, ScoreToSave, TeamHoleMask, m_HoleDetails[currentHole].getNumberOfShotsForThisHole());
                 break;
+
+            case DISPLAY_MODE_STABLEFORD:
+                ScoreToSave = m_HoleDetails[currentHole].getStablefordHoleScore();
+                TeamSavePointTeamScore(currentHole, ScoreToSave, TeamHoleMask, m_HoleDetails[currentHole].getNumberOfShotsForThisHole());
+                break;
         }
 
     }
@@ -542,6 +574,9 @@ This function will return the point quota for the score entered
     public byte DeterminePointScoreQuotaScore(int PointQuotaHoleScore) {
 
         switch (PointQuotaHoleScore) {
+            case -3:
+                PointQuotaHoleScore = m_PointQuotaArray[PQ_ALBATROSS];
+                break;
             case -2:
                 PointQuotaHoleScore = m_PointQuotaArray[PQ_EAGLE];
                 break;
@@ -592,6 +627,28 @@ This function will display the player hole score on to the score card.
     }
 
     /*
+This function will get the player gross score used for the 9's game
+ */
+    public int GetplayerGrossScore(int currentHole) {
+        int GrossScore = m_HoleDetails[currentHole].getGrossScore();
+        return GrossScore;
+    }
+
+    /*
+  This function will get the player net score used for the 9's game
+   */
+    public int GetplayerNetScore(int currentHole) {
+        int NetScore = m_HoleDetails[currentHole].getNetScore();
+        return NetScore;
+    }/*
+    This function will save this player's 9 game score for this hole.
+ */
+
+    public void Assign_9_GameScore(int currentHole, int game_9_score) {
+        m_HoleDetails[currentHole].setPlayer_9_GameScore((byte) game_9_score);
+    }
+
+    /*
     This function will display the total score for the player
      */
     public void DisplayPlayerTotalScore(DisplayScoreCardDetail.WhatNineIsDisplayed DisplayFrontOrBackScoreCard, int displayMode) {
@@ -614,9 +671,18 @@ This function will display the player hole score on to the score card.
                 case DISPLAY_MODE_POINT_QUOTA:
                     TotalPlayerScore += m_HoleDetails[StartHole].getQuotaHoleScore();
                     break;
+
+                case DISPLAY_MODE_STABLEFORD:
+                    TotalPlayerScore += m_HoleDetails[StartHole].getStablefordHoleScore();
+                    break;
+
+                case DISPLAY_MODE_9_GAME:
+                    TotalPlayerScore += m_HoleDetails[StartHole].get_9_GamePoints();
+                    break;
             }
             StartHole++;
         }
+
         if (displayMode == DISPLAY_MODE_POINT_QUOTA) {
             PoinQuotaTargetValue = m_PoinQuotaTargetValue / 2;
             PoinQuotaTargetValue += TotalPlayerScore;
@@ -625,6 +691,7 @@ This function will display the player hole score on to the score card.
         } else {
             m_tvTotal.setText("" + TotalPlayerScore);
         }
+
     }
 
     /*******************
@@ -649,19 +716,9 @@ This function will calculate the summary of the player's round.
  */
 
     public void CalculatePlayerScoreSummary(int[] CoursePar, int[] courseHandicap) {
-        int CourseHandicapForHole, TeamHoleMask;
-        int CurrentHole, OverUnderScore, PlayerHandicap, PlayerHoleScore, PlayerHandicapScore, PlayerHandicapQuotaScore, PlayerQuotaScore;
+        int TeamHoleMask;
+        int CurrentHole, OverUnderScore, PlayerHandicap, PlayerHoleScore, PlayerQuotaScore;
         byte ShotsForThisHole;
-
-        for (int Hole = 0; Hole < HOLES_18; Hole++) {
-            CourseHandicapForHole = courseHandicap[Hole];
-            setStrokeHoles(Hole, CourseHandicapForHole);      // the hole with a strokes
-            setTeamTheParForEachHole(Hole, (byte) CoursePar[Hole]); // used by team scoring
-        }
-
-        TeamClearHoleMask();          // set  variables to zero
-        LoadPlayerScoresIntoHoleClass();            // Load the player's scores from the database
-        LoadPlayerQuotaScores();                    // calculate quota scores
 
         PlayerHandicap = getPlayerHandicap();
         m_SummaryStokeScore[SUM_QUOTA] = PlayerHandicap - m_PointQuotaArray[PQ_TARGET];  // player's total score will start off with a negative number (Handicap - Target) i.e.  19 - 36 = -19.
@@ -675,8 +732,9 @@ This function will calculate the summary of the player's round.
                 TeamSaveGrossNetTeamScore(CurrentHole, (byte) PlayerHoleScore, TeamHoleMask, ShotsForThisHole);
 
                 m_SummaryStokeScore[SUM_SCORE] += PlayerHoleScore;
-                PlayerQuotaScore = m_HoleDetails[CurrentHole].getQuotaHoleScore();
-                m_SummaryStokeScore[SUM_QUOTA] += PlayerQuotaScore;
+                m_SummaryStokeScore[SUM_QUOTA] += m_HoleDetails[CurrentHole].getQuotaHoleScore();       // point quota score total
+                m_SummaryStokeScore[SUM_PTS] += m_HoleDetails[CurrentHole].get_9_GamePoints();          // 9 points game score
+                m_SummaryStokeScore[SUM_STABLEFORD] += m_HoleDetails[CurrentHole].getStablefordHoleScore();          // 9 points game score
 
                 OverUnderScore = PlayerHoleScore - CoursePar[CurrentHole];
                 TeamSaveOverUnderTeamScore(CurrentHole, (byte) OverUnderScore, TeamHoleMask, ShotsForThisHole);
@@ -706,7 +764,7 @@ This function will calculate the summary of the player's round.
     }
 
     /*
-This function will get the  player's golf summary - "Score", "Quota", "Eagle", "Birdies", " Pars", "Bog", "Dbl", "Othr"
+This function will get the  player's golf summary - "Score", "Quota", "Sbfd", "Eagle", "Birdies", " Pars", "Bog", "Dbl", "Othr", Pts
  */
     public int GetPlayerStrokeSummary(int StrokeType) {
         int StrokeValue = -1;
@@ -754,5 +812,4 @@ This function is used by the email player's score function - build the message b
 
         return PlayersScore;
     }
-
 }
