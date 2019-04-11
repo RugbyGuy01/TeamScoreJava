@@ -567,7 +567,8 @@ This function will populate the data entry of the score card lower screen, Playe
         int Inx, NextHole, Game_9_Score, PlayerNetScore;
 
         m_TeamScoreTotals.ClearHole(CurrentHole);       // make sure the team score for this is set to zero
-        m_Player_9_Game.ClearTotals();                  // clear the hole totals for the 9 game
+        if (m_NumberOfPlayers == NINE_PLAYERS)
+            m_Player_9_Game.ClearTotals();                  // clear the hole totals for the 9 game
 
         for (Inx = 0; Inx < m_NumberOfPlayers; Inx++) {
             m_DisplayPlayerScore[Inx].SavePlayerHoleScoreToDatabase(m_RealmScoreCardAccess, CurrentHole); // record are zero based 0 to 8
@@ -716,6 +717,7 @@ This function will populate the data entry of the score card lower screen, Playe
             m_ScoreCardDisplay.HighLightTheFirstHoleOnScoreCard((byte) currentHoleDisplay);
         }
     };
+
     /*
 This function will update the score card with the hole numbers, handicap and par for the front or back nine holes.
 The Set button text will be used to configure the button
