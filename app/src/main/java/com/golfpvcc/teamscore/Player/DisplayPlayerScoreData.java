@@ -802,7 +802,7 @@ This function is used by the email player's score function - build the message b
                 PlayersScore += NineHole + ",";
                 NineHole = 0;
             }
-            score = getTeamScoreForHole(HoleNumber);
+            score = this.m_HoleDetails[HoleNumber].getGrossScore();
             total += score;
             NineHole += score;
             PlayersScore += score + ",";

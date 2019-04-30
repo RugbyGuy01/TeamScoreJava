@@ -367,6 +367,7 @@ This function will calculate the team strokes over/under using the player's stro
                 m_EmailPlayerScreenData = m_PlayerScreenData[Inx];
                 m_EmailPlayerScreenData.getTvPlayerLowerCurScore().setTextColor(getResources().getColor(R.color.one_under_color));
                 GetEmailAddressFromSystem();
+                m_EmailPlayerScreenData.getTvPlayerLowerCurScore().setTextColor(getResources().getColor(R.color.light_green));
             }
         }
     };

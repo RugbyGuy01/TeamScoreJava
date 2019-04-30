@@ -198,7 +198,7 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
                 break;
 
             case R.id.action_about:
-                Toast.makeText(CourseList.this, "Rev 3.0", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CourseList.this, "Rev 3.2", Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.action_contact:
@@ -264,7 +264,7 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
         final EditText etOtherValue = (EditText) MenuDialog.findViewById(R.id.etOther);
 
         PointQuotaLoadValues(pref, etTargetValue, QUOTA_TARGET, "36");     // load the dialog window with save shared preference values
-        PointQuotaLoadValues(pref, etEagleValue, QUOTA_ALBATROSS, "8");
+        PointQuotaLoadValues(pref, etAlbatrossValue, QUOTA_ALBATROSS, "8");
         PointQuotaLoadValues(pref, etEagleValue, QUOTA_EAGLE, "6");
         PointQuotaLoadValues(pref, etBirdieValue, QUOTA_BIRDIE, "4");
         PointQuotaLoadValues(pref, etParValue, QUOTA_PAR, "2");
