@@ -215,71 +215,107 @@ This function will branch to the next screen using the result for the current sc
     private void DisplayTeamSummary(int NumberOfPlayers) {
         int Row = 1;        // row 0 is the header row
         DisplayTeamPointQuoteSummary(NumberOfPlayers, Row++);
-        DisplayTeamOverUnderSummary(NumberOfPlayers, Row++);
-        DisplayTeamTotalStokeSummary(NumberOfPlayers, Row);
+        DisplayTeamTotalStokeSummary(NumberOfPlayers, Row++);
+        DisplayTeamStablefordSummary(NumberOfPlayers, Row);
     }
-
     /*
 This function will calculate the team point quota team scores
  */
     private void DisplayTeamPointQuoteSummary(int NumberOfPlayers, int DisplayRow) {
-        float FrontNine, BackNine, TeamTotal;
+        float TeamTotalFrontNine, TeamTotalBackNine, TeamTotal, TeamUsedTotalFrontNine, TeamUsedTotalBackNine, TeamUsedTotal;
         int Col = 1;
+        String strTeamTotalFront, strTeamTotalBack, strTeamToal;
 
-        FrontNine = BackNine = TeamTotal = 0;
+        TeamTotalFrontNine = TeamTotalBackNine = TeamTotal = 0;
+        TeamUsedTotalFrontNine = TeamUsedTotalBackNine = 0;
+
         for (int Inx = 0; Inx < NumberOfPlayers; Inx++) {
-            FrontNine += m_PlayerScreenData[Inx].GetTotalPlayerPointQuotaTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota, will round down
-            BackNine += m_PlayerScreenData[Inx].GetTotalPlayerPointQuotaTotal(NINETH_HOLE, HOLES_18);     // get the front nine quota, will round down
+            TeamTotalFrontNine += m_PlayerScreenData[Inx].GetTotalPlayerPointQuotaTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota, will round down
+            TeamTotalBackNine += m_PlayerScreenData[Inx].GetTotalPlayerPointQuotaTotal(NINETH_HOLE, HOLES_18);     // get the front nine quota, will round down
+
+            TeamUsedTotalFrontNine += m_PlayerScreenData[Inx].GetTotalUsedPlayerPointQuotaTotal(FIRST_HOLE, NINETH_HOLE);
+            TeamUsedTotalBackNine += m_PlayerScreenData[Inx].GetTotalUsedPlayerPointQuotaTotal(NINETH_HOLE, HOLES_18);
         }
 
-        TeamTotal += FrontNine + BackNine;
-        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Float.toString(FrontNine));      // will update the front nine total screen
-        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Float.toString(BackNine));      // will update the front back total screen
-        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Float.toString(TeamTotal));      // will update the team total screen
+        TeamTotal += TeamTotalFrontNine + TeamTotalBackNine;
+        TeamUsedTotal = TeamUsedTotalFrontNine + TeamUsedTotalBackNine;
+
+        strTeamTotalFront = Float.toString(TeamTotalFrontNine) + " (" + Float.toString(TeamUsedTotalFrontNine) + ")";
+        strTeamTotalBack = Float.toString(TeamTotalBackNine) + " (" + Float.toString(TeamUsedTotalBackNine) + ")";
+        strTeamToal = Float.toString(TeamTotal) + " (" + Float.toString(TeamUsedTotal) + ")";
+
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(strTeamTotalFront);      // will update the front nine total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(strTeamTotalBack);      // will update the front back total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col].setText(strTeamToal);      // will update the team total screen
     }
 
     /*
-This function will calculate the team strokes over/under using the player's strokes used on holes for team scores
- */
-    private void DisplayTeamOverUnderSummary(int NumberOfPlayers, int DisplayRow) {
-        int FrontNine, BackNine, TeamTotal, Col = 1;
+    This function will calculate the team stableford team points ??
+     */
+    private void DisplayTeamStablefordSummary(int NumberOfPlayers, int DisplayRow) {
+        int TeamStablefordFrontNine, TeamStablefordBackNine, TeamStablefordTotal, Col = 1;
+        int PlayersStablefordFrontNine, PlayersStablefordBackNine, PlayersStablefordTotal;
+        String strTeamStablefordFront, strTeamStablefordBack, strTeamStablefordTotal;
 
-        FrontNine = BackNine = 0;
+        TeamStablefordFrontNine = TeamStablefordBackNine = 0;
+        PlayersStablefordFrontNine = PlayersStablefordBackNine = 0;
+
         for (int Inx = 0; Inx < NumberOfPlayers; Inx++) {
-            FrontNine += m_PlayerScreenData[Inx].GetTotalPlayerUnderOverUseTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota
-            BackNine += m_PlayerScreenData[Inx].GetTotalPlayerUnderOverUseTotal(NINETH_HOLE, HOLES_18);    // get the front nine quota
-        }
-        TeamTotal = FrontNine + BackNine;
-        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(FrontNine));      // will update the front nine total screen
-        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(BackNine));      // will update the front back total screen
-        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(TeamTotal));      // will update the team total screen
-    }
+            TeamStablefordFrontNine += m_PlayerScreenData[Inx].GetTotalStablefordTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota
+            TeamStablefordBackNine += m_PlayerScreenData[Inx].GetTotalStablefordTotal(NINETH_HOLE, HOLES_18);    // get the front nine quota
 
+            PlayersStablefordFrontNine += m_PlayerScreenData[Inx].GetPlayerStablefordTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota
+            PlayersStablefordBackNine += m_PlayerScreenData[Inx].GetPlayerStablefordTotal(NINETH_HOLE, HOLES_18);    // get the front nine quota
+        }
+        TeamStablefordTotal = TeamStablefordFrontNine + TeamStablefordBackNine;
+        PlayersStablefordTotal = PlayersStablefordFrontNine + PlayersStablefordBackNine;
+
+        strTeamStablefordFront = Integer.toString(PlayersStablefordFrontNine) + " (" + Integer.toString(TeamStablefordFrontNine) + ")";
+        strTeamStablefordBack = Integer.toString(PlayersStablefordBackNine) + " (" + Integer.toString(TeamStablefordBackNine) + ")";
+        strTeamStablefordTotal = Integer.toString(PlayersStablefordTotal) + " (" + Integer.toString(TeamStablefordTotal) + ")";
+
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(strTeamStablefordFront);      // will update the front nine total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(strTeamStablefordBack);      // will update the back nine total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col].setText(strTeamStablefordTotal);            // will update the total screen
+
+    }
 
     /*
     This function will display the team total strokes for the front, back and total 18 holes
      */
     private void DisplayTeamTotalStokeSummary(int NumberOfPlayers, int DisplayRow) {
-        int FrontNine, BackNine, TeamTotal, Col = 1;
+        int FrontNineStokes, BackNineStokes, TeamTotalStokes, Col = 1;
+        int FrontNineOverUnder, BackNineOverUnder, TotalOverUnder;
+        String strTeamTotalFront, strTeamTotalBack, strTeamToal;
 
-        FrontNine = BackNine = 0;
+        FrontNineStokes = BackNineStokes = 0;
+        FrontNineOverUnder = BackNineOverUnder = 0;
+
         for (int Inx = 0; Inx < NumberOfPlayers; Inx++) {
-            FrontNine += m_PlayerScreenData[Inx].GetTotalPlayerStrokesUseTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota
-            BackNine += m_PlayerScreenData[Inx].GetTotalPlayerStrokesUseTotal(NINETH_HOLE, HOLES_18);    // get the front nine quota
-        }
-        TeamTotal = FrontNine + BackNine;
-        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(FrontNine));      // will update the front nine total screen
-        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(BackNine));      // will update the front back total screen
-        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(Integer.toString(TeamTotal));      // will update the team total screen
-    }
+            FrontNineStokes += m_PlayerScreenData[Inx].GetTotalPlayerStrokesUseTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota
+            BackNineStokes += m_PlayerScreenData[Inx].GetTotalPlayerStrokesUseTotal(NINETH_HOLE, HOLES_18);    // get the front nine quota
 
+            FrontNineOverUnder += m_PlayerScreenData[Inx].GetTotalPlayerUnderOverUseTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota
+            BackNineOverUnder += m_PlayerScreenData[Inx].GetTotalPlayerUnderOverUseTotal(NINETH_HOLE, HOLES_18);    // get the front nine quota
+        }
+        TeamTotalStokes = FrontNineStokes + BackNineStokes;
+        TotalOverUnder = FrontNineOverUnder + BackNineOverUnder;
+
+        strTeamTotalFront = Integer.toString(FrontNineStokes) + " (" + Integer.toString(FrontNineOverUnder) + ")";
+        strTeamTotalBack = Integer.toString(BackNineStokes) + " (" + Integer.toString(BackNineOverUnder) + ")";
+        strTeamToal = Integer.toString(TeamTotalStokes) + " (" + Integer.toString(TotalOverUnder) + ")";
+
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(strTeamTotalFront);      // will update the front nine total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(strTeamTotalBack);      // will update the back nine total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col].setText(strTeamToal);            // will update the total screen
+    }
 
     /*
     This function will init the Player's hold class - the class has access to the player's database record and keeps track of the player's total and team score.
      */
     private void InitPlayersScreenRecord(int[] PointQuota, int NumberOfPlayers) {
         PlayerRecord MyPlayer;
-        int Inx, CurrentHole, Row = 1;
+        int Inx, CurrentHole, Row;
         int[] CoursePar, CourseHandicap;
         NineGame m_Player_9_Game;
 
@@ -399,7 +435,7 @@ This function will calculate the team strokes over/under using the player's stro
 
         final SharedPreferences pref = getSharedPreferences(EMAIL_ADDRESS, MODE_PRIVATE);
         EmailAddress = pref.getString(EMAIL_ADDRESS, "V");
-        if (false == isEmailValid(EmailAddress)) {
+        if (!isEmailValid(EmailAddress)) {
             DialogEmailAddress EmailDialog = new DialogEmailAddress();
 
             EmailDialog.show(getSupportFragmentManager(), "Configure Email");
@@ -428,7 +464,6 @@ This function will calculate the team strokes over/under using the player's stro
     boolean isEmailValid(CharSequence email) {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
-
 
     /*
   This function will load the Point Quote values into the point quato array - the user can set the values for the course select menu (upper right ...)
@@ -495,7 +530,7 @@ This function will calculate the team strokes over/under using the player's stro
                     m_PointQuota = LoadPointQuotaData();
                     NumberOfPlayers = m_RealmScoreCardAccess.PlayerRecordCnt();  // how many player on the score card
 
-                    TextView tvPlayerSummary = (TextView) findViewById(R.id.textCourseName);
+                    TextView tvPlayerSummary = findViewById(R.id.textCourseName);
                     GolfCourseHeader += GolfCourseName;
                     tvPlayerSummary.setText(GolfCourseHeader);
 
@@ -539,10 +574,10 @@ This function will calculate the team strokes over/under using the player's stro
     This function will build the summary table for the player's scores
      */
     private void BuildSummaryTable(int NumberOfPlayers) {
-        String[] PlayerColumnText = {"Player", "Score", "Quota", "Sbfd", "Eagle", "Bird", "Pars", "Bog", "Dbl", "Othr", "Pts"};
+        String[] PlayerColumnText = {"Player", "Score", "Quota", "Sbfd", "Eagle", "Bird", "Pars", "Bog", "Dbl", "Othr", "9 Pts"};
         String[] PlayerRowText = {"", "Player 1", "Player 2", "Player 3", "Player 4"};
         String[] TeamColumnText = {"Team", "Front", "Back", "Total"};
-        String[] TeamRowText = {"", "Pt. Quota", "Over/Under", "Score"};
+        String[] TeamRowText = {"", "Pt. Quota (Used)", "Score (O/U)", "Stableford (Used)"};
 
         ClearPlayerAndSummaryTables();
 
@@ -552,7 +587,7 @@ This function will calculate the team strokes over/under using the player's stro
         m_PlayerScoreSummaryTable = new TextView[rl][cl];                // row col -  keeps track of all of the cells text views
 
         m_PlayerTableLayoutCreate = createSummaryTableLayout(m_PlayerScoreSummaryTable, PlayerRowText, PlayerColumnText, rl, cl);
-        TableLayout PlayertableLayout = (TableLayout) findViewById(R.id.playerSummary);    // find the table layout in the xml file
+        TableLayout PlayertableLayout = findViewById(R.id.playerSummary);    // find the table layout in the xml file
         PlayertableLayout.addView(m_PlayerTableLayoutCreate);
 
         rl = TeamRowText.length;
@@ -560,7 +595,7 @@ This function will calculate the team strokes over/under using the player's stro
         m_TeamScoreSummaryTable = new TextView[rl][cl];                // row col -  keeps track of all of the cells text views
 
         m_TeamTableLayoutCreate = createSummaryTableLayout(m_TeamScoreSummaryTable, TeamRowText, TeamColumnText, rl, cl);
-        TableLayout TeamtableLayout = (TableLayout) findViewById(R.id.teamSummary);    // find the table layout in the xml file
+        TableLayout TeamtableLayout = findViewById(R.id.teamSummary);    // find the table layout in the xml file
         TeamtableLayout.addView(m_TeamTableLayoutCreate);
     }
 

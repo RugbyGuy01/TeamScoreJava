@@ -11,10 +11,10 @@ import static com.golfpvcc.teamscore.Extras.ConstantsBase.TEAM_NET_SCORE;
 
 /**
  *  This class will hold of the team scores for each player depending on the team selection when saving the player score.  The Team Score Totals class will collect each player's
- *  Team score to calulate the totals for each hole.
+ *  Team score to calculate the totals for each hole.
  */
 public class TeamPlayerScoreData {
-    private byte[] mTeamNetHoleScore, mTeamOverUnderHoleScore, mTeamHolesUsedByPlayers, m_HolePar;
+    private byte[] mTeamNetHoleScore, mTeamOverUnderHoleScore, mTeamHolesUsedByPlayers, mTeamPointQuotaScore, mTeamStablefordScore, m_HolePar;
     private byte mTeamHoleMask;
 
     /*
@@ -27,6 +27,8 @@ public class TeamPlayerScoreData {
         mTeamNetHoleScore = new byte[HOLES_18];        // keeps track of gross under stroke, net total stroke and total team point quotes
         mTeamHolesUsedByPlayers = new byte[HOLES_18];   // Keeps track of if the team used the team score once or twice or the point quote score for the player's selected
         m_HolePar = new byte[HOLES_18];                 // Golf course par for this hole - used for the over/under team score on the card
+        mTeamPointQuotaScore = new byte[HOLES_18];      // will save the player's team point quote score
+        mTeamStablefordScore = new byte[HOLES_18];      // will save the player's team Stableford score
     }
     /*
     This function will clear the 18 hole array - set all elements to zero
@@ -37,6 +39,8 @@ public class TeamPlayerScoreData {
             mTeamNetHoleScore[CurrentHole] = 0;
             mTeamOverUnderHoleScore[CurrentHole] = 0;
             mTeamHolesUsedByPlayers[CurrentHole] = 0;
+            mTeamPointQuotaScore[CurrentHole] = 0;      // this is the player's point quote team score - the TeamScoreTotals class will be used add the players scores.
+            mTeamStablefordScore[CurrentHole] = 0;      // this is the player's Stableford team score - the TeamScoreTotals class will be used add the players scores.
         }
     }
         /*
@@ -59,7 +63,7 @@ public class TeamPlayerScoreData {
         }
         else {
             mTeamNetHoleScore[HoleNumber] = 0;
-            mTeamHolesUsedByPlayers[HoleNumber] = 0;               // use this score once
+            mTeamHolesUsedByPlayers[HoleNumber] = 0;               // do not use this score
         }
     }
     /*
@@ -88,12 +92,49 @@ public class TeamPlayerScoreData {
     /*
 This function will save the team point quote score for all of the players in the team row and only save the select point quote score in the used colunms
  */
-    public void TeamSavePointTeamScore(int currentHole, byte scoreToSave, byte teamHoleMask, byte numberOfShotsForThisHole) {
-        mTeamNetHoleScore[currentHole] = scoreToSave;
-        if( 0 < teamHoleMask )
+    public void TeamSavePointQuotaTeamScore(int currentHole, byte scoreToSave, byte teamHoleMask) {
+        if (0 < teamHoleMask) {
+            mTeamPointQuotaScore[currentHole] = scoreToSave;               // use this score once
             mTeamHolesUsedByPlayers[currentHole] = scoreToSave;               // use this score once
+            if (DOUBLE_TEAM_SCORE == (teamHoleMask & DOUBLE_TEAM_SCORE)) {
+                mTeamPointQuotaScore[currentHole] *= 2;      // use this score twice
+                mTeamHolesUsedByPlayers[currentHole] *= 2;      // use this score twice
+            }
+        }
     }
 
+    /*
+    This function will get the saved teampointQuota score for this player - the player score for the hole must have been high light
+     */
+    public int getUsedTeamPointQuoteScore(int currentHole) {
+        int UsedTeamPointQuoteScore;
+        UsedTeamPointQuoteScore = mTeamPointQuotaScore[currentHole];
+        return (UsedTeamPointQuoteScore);
+    }
+
+    /*
+   This function will save the team point quote score for all of the players in the team row and only save the select point quote score in the used colunms
+    */
+    public void TeamSaveStablefordTeamScore(int currentHole, byte scoreToSave, byte teamHoleMask) {
+        if (0 < teamHoleMask) {
+            mTeamStablefordScore[currentHole] = scoreToSave;               // use this score once
+            mTeamHolesUsedByPlayers[currentHole] = scoreToSave;               // use this score once
+            if (DOUBLE_TEAM_SCORE == (teamHoleMask & DOUBLE_TEAM_SCORE)) {
+                mTeamStablefordScore[currentHole] *= 2;      // use this score twice
+                mTeamHolesUsedByPlayers[currentHole] *= 2;      // use this score twice
+            }
+        }
+    }
+
+    /*
+    This function will get the saved team Stableford score for this player - the player score for the hole must have been high light
+     */
+    public int getUsedTeamStablefordScore(int currentHole) {
+        int UsedTeamStablefordScore;
+
+        UsedTeamStablefordScore = mTeamStablefordScore[currentHole];
+        return (UsedTeamStablefordScore);
+    }
     /*
 This function will save the golf course par for the hole
  */
@@ -114,6 +155,15 @@ This function will save the golf course par for the hole
     public byte getTeamScoreForHole( int HoleNumber){
 
         return (mTeamNetHoleScore[HoleNumber]);
+    }
+
+    /*
+    This function will set the team score for this hole
+    the mTeamNetHoleScore variable used to calculate total team score for all of the players
+    */
+    public void setTeamScoreForHole(int HoleNumber, byte TeamHoleScore) {
+
+        mTeamNetHoleScore[HoleNumber] = TeamHoleScore;
     }
 
     /*
@@ -243,4 +293,5 @@ This function will get the player's over/under score total for the nine holes us
         }
         return (UnderOverTotal);
     }
+
 }

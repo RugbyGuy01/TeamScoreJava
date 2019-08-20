@@ -38,17 +38,17 @@ public class PlayerSetup extends AppCompatActivity {
         setSupportActionBar(toolbar);
         PackageName = getCallingActivity().getPackageName();
 
-        ButSelect = (Button) findViewById(R.id.selectGame);
+        ButSelect = findViewById(R.id.selectGame);
         ButSelect.setOnClickListener(mButOnClickListenerExit);      // this button will now call that function - mButOnClickListenerExit
 
-        ButSelect = (Button) findViewById(R.id.cancel);
+        ButSelect = findViewById(R.id.cancel);
         ButSelect.setOnClickListener(mButOnClickListenerExit);      // this button will now call that function - mButOnClickListenerExit
 
-        ButSelect = (Button) findViewById(R.id.update);
+        ButSelect = findViewById(R.id.update);
         ButSelect.setOnClickListener(mButOnClickListenerExit);      // this button will now call that function - mButOnClickListenerExit
 
         mCourseName = getIntent().getStringExtra(COURSE_NAME);
-        tv_CourseName = (TextView) findViewById(R.id.course_name);
+        tv_CourseName = findViewById(R.id.course_name);
         tv_CourseName.setText(mCourseName);
         ReadPlayersFromDatabase();
     }
@@ -76,12 +76,12 @@ public class PlayerSetup extends AppCompatActivity {
 
                 String PlayerTextID = "player_" + (x + 1);
                 int PlayerresID = getResources().getIdentifier(PlayerTextID, "id", PackageName);
-                ET_Player = ((EditText) findViewById(PlayerresID));
+                ET_Player = findViewById(PlayerresID);
                 ET_Player.setText(Player.get_PlayerName()); // looad player's name
 
                 String HandicapTextID = "handicap_" + (x + 1);
                 int HndcappresID = getResources().getIdentifier(HandicapTextID, "id", PackageName);
-                ET_Handicap = ((EditText) findViewById(HndcappresID));
+                ET_Handicap = findViewById(HndcappresID);
                 ET_Handicap.setText("" + Player.getM_Handicap());    // will set the handicap for an int to a string
             }
         }
@@ -94,7 +94,7 @@ public class PlayerSetup extends AppCompatActivity {
             String PlayerName, HndCap;
             PlayerRecord[] Players;
             byte[][] PlayerScores;
-            int id = view.getId(), CurrentTotalPlayer = 0;
+            int id = view.getId(), CurrentTotalPlayer;
 
             Intent intentSendDataBack = new Intent();   // data sent back to the calling activity
 
@@ -117,15 +117,15 @@ public class PlayerSetup extends AppCompatActivity {
                 for (int x = 0; x < PLAYER_TOTAL; x++) {
                     String PlayerTextID = "player_" + (x + 1);
                     int PlayerresID = getResources().getIdentifier(PlayerTextID, "id", PackageName);
-                    ET_Player = ((EditText) findViewById(PlayerresID));
+                    ET_Player = findViewById(PlayerresID);
                     PlayerName = ET_Player.getText().toString();
 
                     String HandicapTextID = "handicap_" + (x + 1);
                     int HndcappresID = getResources().getIdentifier(HandicapTextID, "id", PackageName);
-                    ET_Handicap = ((EditText) findViewById(HndcappresID));
+                    ET_Handicap = (findViewById(HndcappresID));
                     HndCap = ET_Handicap.getText().toString();
 
-                    if (2 < PlayerName.length()) {
+                    if (1 < PlayerName.length()) {
                         Players[x] = new PlayerRecord(Integer.parseInt(HndCap), PlayerName);
                         if (id == R.id.update) { // need to save the scores for each play so we can update the name & handicap
                             Players[x].setmByteScore(PlayerScores[x]);

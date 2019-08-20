@@ -198,7 +198,7 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
                 break;
 
             case R.id.action_about:
-                Toast.makeText(CourseList.this, "Rev 3.2", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CourseList.this, "Rev 4.1", Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.action_contact:
