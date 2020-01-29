@@ -131,7 +131,7 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.course_list_layout);
-        mToolBar = (Toolbar) findViewById(R.id.toolbar);
+        mToolBar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolBar);              // need the tool bar to have an menu list
         mEmptyCourseList = findViewById(R.id.empty_course);
 
@@ -144,7 +144,7 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
         mAdapterCourseList = new AdapterListCourses(this, m_Realm, mCourseListResults, mAddCourseListener);
         mAdapterCourseList.setHasStableIds(true);           // needed for animation
 
-        mCourseListRecyclerView = (CourseListRecyclerView) findViewById(R.id.course_list_recycler_view);// rv_course_list);
+        mCourseListRecyclerView = findViewById(R.id.course_list_recycler_view);// rv_course_list);
         mCourseListRecyclerView.addItemDecoration(new Divider(this, LinearLayoutManager.VERTICAL)); // draws the divider between the course records
         mCourseListRecyclerView.hideIfEmpty(mToolBar);
         mCourseListRecyclerView.showIfEmpty(mEmptyCourseList);
@@ -157,7 +157,7 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
         LinearLayoutManager manager = new LinearLayoutManager(this);
         mCourseListRecyclerView.setLayoutManager(manager);
 
-        mBtnAddCourse = (Button) findViewById(R.id.butAddNewCourse);  //this takes the xml file and turns it into java code.
+        mBtnAddCourse = findViewById(R.id.butAddNewCourse);  //this takes the xml file and turns it into java code.
         mBtnAddCourse.setOnClickListener(mButAddCourseListener);
 
         initBackgroundImage();
@@ -198,7 +198,7 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
                 break;
 
             case R.id.action_about:
-                Toast.makeText(CourseList.this, "Rev 4.1", Toast.LENGTH_SHORT).show();
+                Toast.makeText(CourseList.this, "Revision 5.0", Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.action_contact:
@@ -253,15 +253,15 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
         MenuDialog.setTitle("Setup Point Quota");
         MenuDialog.setContentView(R.layout.dialog_pt_quota);
         MenuDialog.show();
-        final EditText etTargetValue = (EditText) MenuDialog.findViewById(R.id.etQuotaTarget);
+        final EditText etTargetValue = MenuDialog.findViewById(R.id.etQuotaTarget);
         // Albatross
-        final EditText etAlbatrossValue = (EditText) MenuDialog.findViewById(R.id.etAlbatross);
-        final EditText etEagleValue = (EditText) MenuDialog.findViewById(R.id.etEagle);
-        final EditText etBirdieValue = (EditText) MenuDialog.findViewById(R.id.etBirdie);
-        final EditText etParValue = (EditText) MenuDialog.findViewById(R.id.etPar);
-        final EditText etBoggeyValue = (EditText) MenuDialog.findViewById(R.id.etBogey);
-        final EditText etDoubleValue = (EditText) MenuDialog.findViewById(R.id.etDouble);
-        final EditText etOtherValue = (EditText) MenuDialog.findViewById(R.id.etOther);
+        final EditText etAlbatrossValue = MenuDialog.findViewById(R.id.etAlbatross);
+        final EditText etEagleValue = MenuDialog.findViewById(R.id.etEagle);
+        final EditText etBirdieValue = MenuDialog.findViewById(R.id.etBirdie);
+        final EditText etParValue = MenuDialog.findViewById(R.id.etPar);
+        final EditText etBoggeyValue = MenuDialog.findViewById(R.id.etBogey);
+        final EditText etDoubleValue = MenuDialog.findViewById(R.id.etDouble);
+        final EditText etOtherValue = MenuDialog.findViewById(R.id.etOther);
 
         PointQuotaLoadValues(pref, etTargetValue, QUOTA_TARGET, "36");     // load the dialog window with save shared preference values
         PointQuotaLoadValues(pref, etAlbatrossValue, QUOTA_ALBATROSS, "8");
@@ -272,8 +272,8 @@ public class CourseList extends AppCompatActivity implements DialogEmailAddress.
         PointQuotaLoadValues(pref, etDoubleValue, QUOTA_DOUBLE, "0");
         PointQuotaLoadValues(pref, etOtherValue, QUOTA_OTHER, "-1");
 
-        Button butQuotaSave = (Button) MenuDialog.findViewById(R.id.butSaveQuota);
-        Button butQuotaCanel = (Button) MenuDialog.findViewById(R.id.butCancelQuota);
+        Button butQuotaSave = MenuDialog.findViewById(R.id.butSaveQuota);
+        Button butQuotaCanel = MenuDialog.findViewById(R.id.butCancelQuota);
 
         // user clicked save point quota stoke values
         butQuotaSave.setOnClickListener(new View.OnClickListener() {
@@ -355,7 +355,7 @@ This function will validate the data entred by the user is validate - a blank li
     }
 
     private void initBackgroundImage() {
-        ImageView mImageView = (ImageView) findViewById(R.id.iv_logo);
+        ImageView mImageView = findViewById(R.id.iv_logo);
         Glide.with(this)
                 .load(R.drawable.logo)
                 .centerCrop()
