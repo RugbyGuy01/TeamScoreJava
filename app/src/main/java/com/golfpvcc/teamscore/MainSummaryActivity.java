@@ -78,7 +78,7 @@ public class MainSummaryActivity extends AppCompatActivity implements DialogEmai
         super.onCreate(savedInstanceState);
         setContentView(R.layout.game_summary);
 
-        if (true == OpenReamlDatabase()) {
+        if (OpenReamlDatabase()) {
             DisplayGameSummary();
         } else {        // golf course has been deleted or no players on the score card, display the select a golf course screen
             Intent intent = new Intent(this, CourseList.class);    // list the courses to select
@@ -214,20 +214,22 @@ This function will branch to the next screen using the result for the current sc
      */
     private void DisplayTeamSummary(int NumberOfPlayers) {
         int Row = 1;        // row 0 is the header row
-        DisplayTeamPointQuoteSummary(NumberOfPlayers, Row++);
+        Row = DisplayTeamPointQuoteSummary(NumberOfPlayers, Row);
         DisplayTeamTotalStokeSummary(NumberOfPlayers, Row++);
         DisplayTeamStablefordSummary(NumberOfPlayers, Row);
     }
     /*
 This function will calculate the team point quota team scores
  */
-    private void DisplayTeamPointQuoteSummary(int NumberOfPlayers, int DisplayRow) {
-        float TeamTotalFrontNine, TeamTotalBackNine, TeamTotal, TeamUsedTotalFrontNine, TeamUsedTotalBackNine, TeamUsedTotal;
+    private int DisplayTeamPointQuoteSummary(int NumberOfPlayers, int DisplayRow) {
+        float TeamTotalFrontNine, TeamTotalBackNine, TeamTotal, TeamUsedTotalFrontNine, TeamUsedTotalBackNine, TeamUsedTotal, TeamPointsFrontNine, TeamPointsBackNine, TeamPointsTotal;
         int Col = 1;
-        String strTeamTotalFront, strTeamTotalBack, strTeamToal;
+        String strTeamTotalFront, strTeamTotalBack, strTeamToal, strTeamActualPointsFront, strTeamActualPointsBack, strTeamActualPointsTotal;
 
         TeamTotalFrontNine = TeamTotalBackNine = TeamTotal = 0;
         TeamUsedTotalFrontNine = TeamUsedTotalBackNine = 0;
+
+        float TeamBasePointsNeeded = CalculatedTeamPointsNeeded(NumberOfPlayers);
 
         for (int Inx = 0; Inx < NumberOfPlayers; Inx++) {
             TeamTotalFrontNine += m_PlayerScreenData[Inx].GetTotalPlayerPointQuotaTotal(FIRST_HOLE, NINETH_HOLE);    // get the front nine quota, will round down
@@ -236,17 +238,45 @@ This function will calculate the team point quota team scores
             TeamUsedTotalFrontNine += m_PlayerScreenData[Inx].GetTotalUsedPlayerPointQuotaTotal(FIRST_HOLE, NINETH_HOLE);
             TeamUsedTotalBackNine += m_PlayerScreenData[Inx].GetTotalUsedPlayerPointQuotaTotal(NINETH_HOLE, HOLES_18);
         }
+        TeamPointsFrontNine = (TeamBasePointsNeeded / 2) + TeamTotalFrontNine;    // calculate the total points for the team on the front nine - ie add up all of the players points
+        TeamPointsBackNine = (TeamBasePointsNeeded / 2) + TeamTotalBackNine;    // calculate the total points for the team on the front nine - ie add up all of the players points
 
-        TeamTotal += TeamTotalFrontNine + TeamTotalBackNine;
+        TeamTotal += TeamTotalFrontNine + TeamTotalBackNine;    // The values are under/over team quotes
+        TeamPointsTotal = TeamPointsFrontNine + TeamPointsBackNine; // actual points scored
         TeamUsedTotal = TeamUsedTotalFrontNine + TeamUsedTotalBackNine;
 
-        strTeamTotalFront = Float.toString(TeamTotalFrontNine) + " (" + Float.toString(TeamUsedTotalFrontNine) + ")";
-        strTeamTotalBack = Float.toString(TeamTotalBackNine) + " (" + Float.toString(TeamUsedTotalBackNine) + ")";
-        strTeamToal = Float.toString(TeamTotal) + " (" + Float.toString(TeamUsedTotal) + ")";
+        strTeamTotalFront = TeamTotalFrontNine + " (" + TeamUsedTotalFrontNine + ")";
+        strTeamTotalBack = TeamTotalBackNine + " (" + TeamUsedTotalBackNine + ")";
+        strTeamToal = TeamTotal + " (" + TeamUsedTotal + ")";
+
+        strTeamActualPointsFront = TeamPointsFrontNine + " (" + TeamBasePointsNeeded / 2 + ")";
+        strTeamActualPointsBack = TeamPointsBackNine + " (" + TeamBasePointsNeeded / 2 + ")";
+        strTeamActualPointsTotal = TeamPointsTotal + " (" + TeamBasePointsNeeded + ")";
 
         m_TeamScoreSummaryTable[DisplayRow][Col++].setText(strTeamTotalFront);      // will update the front nine total screen
         m_TeamScoreSummaryTable[DisplayRow][Col++].setText(strTeamTotalBack);      // will update the front back total screen
         m_TeamScoreSummaryTable[DisplayRow][Col].setText(strTeamToal);      // will update the team total screen
+        Col = 1;
+        DisplayRow++;       // next row in the display grid
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(strTeamActualPointsFront);      // will update the front nine total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col++].setText(strTeamActualPointsBack);      // will update the front back total screen
+        m_TeamScoreSummaryTable[DisplayRow][Col].setText(strTeamActualPointsTotal);      // will update the team total screen
+        DisplayRow++;
+        return (DisplayRow);
+    }
+
+    /*
+    This function will calculate the points needed by the team from the point Quote.
+     */
+    int CalculatedTeamPointsNeeded(int NumberOfPlayers) {
+        int TeamBasePointsNeeded, PlayersHandicap = 0;
+
+        for (int Inx = 0; Inx < NumberOfPlayers; Inx++) {
+            PlayersHandicap += m_PlayerScreenData[Inx].getPlayerHandicap();
+        }
+        TeamBasePointsNeeded = m_PointQuota[PQ_TARGET] * NumberOfPlayers;   //if all players had a 0 handicap, this is how many point they would need
+        TeamBasePointsNeeded -= PlayersHandicap;                            // however, subtract the total handicap of all of the players from the team bas point needed
+        return (TeamBasePointsNeeded);
     }
 
     /*
@@ -417,8 +447,8 @@ This function will calculate the team point quota team scores
         String Subject = "Player's Score: ";
         Subject += tmpPlayerScreenData.getPlayerName();
         Subject += "  - " + m_RealmScoreCardAccess.getTodayGolfCoursename();        // get the current score for today's game
-        String Body = tmpPlayerScreenData.getSpreadSheetScore();
-
+        String Body = tmpPlayerScreenData.getSpreadSheetScore() + ",";
+        Body += m_RealmScoreCardAccess.getTodayGolfCoursename() + ",";        // add course name, user will add the tee box or yardage
 
         MyEmailApp = new EmailScores(this);
         MyEmailApp.SetEmailAddress(EmailTo);
@@ -577,7 +607,7 @@ This function will calculate the team point quota team scores
         String[] PlayerColumnText = {"Player", "Score", "Quota", "Sbfd", "Eagle", "Bird", "Pars", "Bog", "Dbl", "Othr", "9 Pts"};
         String[] PlayerRowText = {"", "Player 1", "Player 2", "Player 3", "Player 4"};
         String[] TeamColumnText = {"Team", "Front", "Back", "Total"};
-        String[] TeamRowText = {"", "Pt. Quota (Used)", "Score (O/U)", "Stableford (Used)"};
+        String[] TeamRowText = {"", "Pt. Quota (Used)", "Points (Quota)", "Score (O/U)", "Stableford (Used)"};
 
         ClearPlayerAndSummaryTables();
 
