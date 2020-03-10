@@ -842,8 +842,8 @@ This function will calculated the player total Stableford
 This function is used by the email player's score function - build the message body so the user can add it to a excel spreadsheet
  */
     public String getSpreadSheetScore() {
-        String PlayersScore = " ";
-        int total = 0, score, NineHole = 0;
+        String PlayersScore = " ", CourseParStr = "";
+        int total = 0, score, NineHole = 0, ParForHole;
         Date today = new Date();
 
         //formatting date in Java using SimpleDateFormat
@@ -861,7 +861,23 @@ This function is used by the email player's score function - build the message b
             PlayersScore += score + ",";
         }
         PlayersScore += NineHole + ",";
-        PlayersScore += total;
+        PlayersScore += total + ",";
+// now add the par for the course to the email
+        total = 0;
+        for (int HoleNumber = 0; HoleNumber < HOLES_18; HoleNumber++) {
+            if (HoleNumber == NINETH_HOLE) {
+                CourseParStr += NineHole + ",";
+                NineHole = 0;
+            }
+            ParForHole = GetTeamTheParForThisHole(HoleNumber);
+            total += ParForHole;
+            NineHole += ParForHole;
+            CourseParStr += ParForHole + ",";
+        }
+        CourseParStr += NineHole + ",";
+        CourseParStr += total;
+        PlayersScore += CourseParStr;
+
 
         return PlayersScore;
     }
